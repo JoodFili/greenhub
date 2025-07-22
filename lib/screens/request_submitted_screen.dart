@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'NewOrder.dart';
 
 class RequestSubmittedScreen extends StatelessWidget {
   const RequestSubmittedScreen({super.key});
@@ -48,7 +49,11 @@ class RequestSubmittedScreen extends StatelessWidget {
                   ),
                   child: const Text('طلباتي'),
                   onPressed: () {
-                    Navigator.popUntil(context, (route) => route.isFirst);
+                    // Navigate to NewOrder.dart and replace the current route
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => NewOrder()),
+                    );
                   },
                 ),
               ),
@@ -59,5 +64,4 @@ class RequestSubmittedScreen extends StatelessWidget {
     );
   }
 }
-
 

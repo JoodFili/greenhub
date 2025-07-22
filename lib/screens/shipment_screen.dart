@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'location_screen.dart';
+import 'NewOrder.dart';         // Import the NewOrder screen
+import 'FavoritesPage.dart';     // Import the FavoritesPage screen
+import 'AccountPage.dart';       // Import the AccountPage screen
 
 class shipment_screen extends StatefulWidget {
   @override
@@ -10,8 +13,12 @@ class _ShipmentScreenState extends State<shipment_screen> {
   String serviceType = "فوري";
   final Color customGreen = const Color(0xFF048372);
   final Color backgroundGray = const Color(0xFFF2F2F2);
+  // Define the new color for the AM/PM background
+  final Color newAmpmColor = const Color(0xFFAECF5C); // #aecf5c
+
   DateTime? selectedDate;
   TimeOfDay? selectedTime;
+  int _selectedIndex = 0; // Added to manage the selected tab in BottomNavigationBar
 
   Future<void> _selectDateTime() async {
     final DateTime? pickedDate = await showDatePicker(
@@ -47,6 +54,21 @@ class _ShipmentScreenState extends State<shipment_screen> {
                 onPrimary: Colors.white,
                 onSurface: Colors.black,
               ),
+              // Add TimePickerThemeData to customize the time picker
+              timePickerTheme: TimePickerThemeData(
+                dayPeriodColor: newAmpmColor, // Set the background color for AM/PM
+                dayPeriodTextColor: Colors.white, // Text color for AM/PM
+                hourMinuteColor: customGreen, // Background for selected hour/minute
+                hourMinuteTextColor: Colors.white, // Text color for selected hour/minute
+                dialHandColor: customGreen, // Color of the clock hand
+                dialTextColor: MaterialStateColor.resolveWith((states) {
+                  if (states.contains(MaterialState.selected)) {
+                    return Colors.white; // Color of selected hour/minute text on dial
+                  }
+                  return Colors.black; // Color of unselected hour/minute text on dial
+                }),
+                entryModeIconColor: customGreen, // Color of the keyboard icon
+              ),
             ),
             child: child!,
           );
@@ -58,6 +80,40 @@ class _ShipmentScreenState extends State<shipment_screen> {
           selectedTime = pickedTime;
         });
       }
+    }
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    // Navigate based on the tapped index
+    switch (index) {
+      case 0:
+      // If you still want a home screen, you'll need to define a new one
+      // or remove this case if 'الرئيسية' is no longer needed.
+      // For now, it will do nothing or you can navigate to a default screen.
+      // Example: Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SomeOtherDefaultScreen()));
+        break;
+      case 1:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => NewOrder()),
+        );
+        break;
+      case 2:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => FavoritesPage()),
+        );
+        break;
+      case 3:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => AccountPage()),
+        );
+        break;
     }
   }
 
@@ -84,10 +140,11 @@ class _ShipmentScreenState extends State<shipment_screen> {
           iconTheme: IconThemeData(color: customGreen),
         ),
         bottomNavigationBar: BottomNavigationBar(
-          currentIndex: 0,
+          currentIndex: _selectedIndex, // Use the state variable
           selectedItemColor: customGreen,
           unselectedItemColor: Colors.grey,
           type: BottomNavigationBarType.fixed,
+          onTap: _onItemTapped, // Add the onTap callback
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: 'الرئيسية'),
             BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), label: 'طلباتي'),
@@ -278,6 +335,8 @@ class _ShipmentScreenState extends State<shipment_screen> {
               borderRadius: BorderRadius.circular(12),
             ),
             contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            filled: true, // هذه الخاصية تمكن تعبئة الخلفية
+            fillColor: Colors.white, // هذه الخاصية تحدد لون الخلفية إلى الأبيض
           ),
         ),
       ],
@@ -309,13 +368,3 @@ class _ShipmentScreenState extends State<shipment_screen> {
     );
   }
 }
-
-
-
-
-
-
-
-
-
-

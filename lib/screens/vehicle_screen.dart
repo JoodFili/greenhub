@@ -1,11 +1,54 @@
 import 'package:flutter/material.dart';
 import 'request_submitted_screen.dart';
+import 'NewOrder.dart';         // Import the NewOrder screen
+import 'FavoritesPage.dart';     // Import the FavoritesPage screen
+import 'AccountPage.dart';       // Import the AccountPage screen
+// If you have a new home screen, import it here, e.g., 'NewHomeScreen.dart'
 
-class VehicleSelectionScreen extends StatelessWidget {
+class VehicleSelectionScreen extends StatefulWidget {
   const VehicleSelectionScreen({super.key});
 
+  @override
+  State<VehicleSelectionScreen> createState() => _VehicleSelectionScreenState();
+}
+
+class _VehicleSelectionScreenState extends State<VehicleSelectionScreen> {
   final Color customGreen = const Color(0xFF048372);
   final Color backgroundGray = const Color(0xFFF2F2F2);
+  int _selectedIndex = 0; // Added to manage the selected tab in BottomNavigationBar
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    // Navigate based on the tapped index
+    switch (index) {
+      case 0:
+      // 'الرئيسية' (Home) - If ClientHomeScreen was removed, this case will do nothing
+      // or you can navigate to a new default home screen if you create one.
+      // Example: Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => NewHomeScreen()));
+        break;
+      case 1:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => NewOrder()),
+        );
+        break;
+      case 2:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => FavoritesPage()),
+        );
+        break;
+      case 3:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => AccountPage()),
+        );
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,10 +57,11 @@ class VehicleSelectionScreen extends StatelessWidget {
       child: Scaffold(
         backgroundColor: backgroundGray,
         bottomNavigationBar: BottomNavigationBar(
-          currentIndex: 0,
+          currentIndex: _selectedIndex, // Use the state variable
           selectedItemColor: customGreen,
           unselectedItemColor: Colors.grey,
           type: BottomNavigationBarType.fixed,
+          onTap: _onItemTapped, // Add the onTap callback
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: 'الرئيسية'),
             BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), label: 'طلباتي'),
@@ -177,6 +221,8 @@ class VehicleSelectionScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
             ),
             contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            filled: true, // تمكين تعبئة الخلفية
+            fillColor: Colors.white, // تعيين لون الخلفية إلى الأبيض
           ),
         ),
         const SizedBox(height: 16),
@@ -228,6 +274,8 @@ class VehicleSelectionScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  filled: true, // تمكين تعبئة الخلفية
+                  fillColor: Colors.white, // تعيين لون الخلفية إلى الأبيض
                 ),
                 value: selected,
                 isExpanded: true,
