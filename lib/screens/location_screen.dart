@@ -20,19 +20,19 @@ class _LocationScreenState extends State<LocationScreen> {
   late GoogleMapController _mapController;
   bool addToFavorites = false;
   static const LatLng _initialPosition = LatLng(21.4858, 39.1925);
-  int _selectedIndex = 0; // Added to manage the selected tab in BottomNavigationBar
+  int _selectedIndex = 0;
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
 
-    // Navigate based on the tapped index
+
     switch (index) {
       case 0:
-      // 'الرئيسية' (Home) - If you removed ClientHomeScreen, this case will do nothing
-      // or you can navigate to a new default home screen if you create one.
-      // Example: Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => NewHomeScreen()));
+
+
+
         break;
       case 1:
         Navigator.pushReplacement(
@@ -62,11 +62,11 @@ class _LocationScreenState extends State<LocationScreen> {
       child: Scaffold(
         backgroundColor: backgroundGray,
         bottomNavigationBar: BottomNavigationBar(
-          currentIndex: _selectedIndex, // Use the state variable
+          currentIndex: _selectedIndex,
           selectedItemColor: customGreen,
           unselectedItemColor: Colors.grey,
           type: BottomNavigationBarType.fixed,
-          onTap: _onItemTapped, // Add the onTap callback
+          onTap: _onItemTapped,
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: 'الرئيسية'),
             BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), label: 'طلباتي'),
@@ -97,7 +97,7 @@ class _LocationScreenState extends State<LocationScreen> {
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              // نقطة الانطلاق - نفس تصميم الشحنة
+
               Container(
                 width: double.infinity,
                 child: Column(
@@ -108,7 +108,7 @@ class _LocationScreenState extends State<LocationScreen> {
                 ),
               ),
               SizedBox(height: 16),
-              // الوجهة - نفس تصميم الشحنة
+
               Container(
                 width: double.infinity,
                 child: Column(
@@ -119,7 +119,7 @@ class _LocationScreenState extends State<LocationScreen> {
                 ),
               ),
               SizedBox(height: 16),
-              // إضافة إلى المفضلة - محاذاة لليمين
+
               Container(
                 width: double.infinity,
                 child: Align(
@@ -149,12 +149,12 @@ class _LocationScreenState extends State<LocationScreen> {
                 ),
               ),
               SizedBox(height: 16),
-              // الخريطة
+
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
                     border: Border.all(color: customGreen),
-                    borderRadius: BorderRadius.circular(12), // نفس الشكل المدور
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
@@ -174,7 +174,7 @@ class _LocationScreenState extends State<LocationScreen> {
                 ),
               ),
               SizedBox(height: 16),
-              // عنوان الموقع
+
               Container(
                 width: double.infinity,
                 child: Text(
@@ -184,7 +184,7 @@ class _LocationScreenState extends State<LocationScreen> {
                 ),
               ),
               SizedBox(height: 16),
-              // زر التالي - نفس التصميم من الشحنة
+
               Container(
                 width: double.infinity,
                 child: Align(
@@ -229,7 +229,6 @@ class _LocationScreenState extends State<LocationScreen> {
     );
   }
 
-  // نفس دالة buildLabeledTextField من شاشة الشحنة
   Widget buildLabeledTextField(String label, String hint) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -265,8 +264,8 @@ class _LocationScreenState extends State<LocationScreen> {
               borderRadius: BorderRadius.circular(12),
             ),
             contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            filled: true, // تمكين تعبئة الخلفية
-            fillColor: Colors.white, // تعيين لون الخلفية إلى الأبيض
+            filled: true,
+            fillColor: Colors.white,
           ),
         ),
       ],

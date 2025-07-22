@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'location_screen.dart';
-import 'NewOrder.dart';         // Import the NewOrder screen
-import 'FavoritesPage.dart';     // Import the FavoritesPage screen
-import 'AccountPage.dart';       // Import the AccountPage screen
+import 'NewOrder.dart';
+import 'FavoritesPage.dart';
+import 'AccountPage.dart';
 
 class shipment_screen extends StatefulWidget {
   @override
@@ -13,12 +13,11 @@ class _ShipmentScreenState extends State<shipment_screen> {
   String serviceType = "فوري";
   final Color customGreen = const Color(0xFF048372);
   final Color backgroundGray = const Color(0xFFF2F2F2);
-  // Define the new color for the AM/PM background
-  final Color newAmpmColor = const Color(0xFFAECF5C); // #aecf5c
+  final Color newAmpmColor = const Color(0xFFAECF5C);
 
   DateTime? selectedDate;
   TimeOfDay? selectedTime;
-  int _selectedIndex = 0; // Added to manage the selected tab in BottomNavigationBar
+  int _selectedIndex = 0;
 
   Future<void> _selectDateTime() async {
     final DateTime? pickedDate = await showDatePicker(
@@ -54,20 +53,20 @@ class _ShipmentScreenState extends State<shipment_screen> {
                 onPrimary: Colors.white,
                 onSurface: Colors.black,
               ),
-              // Add TimePickerThemeData to customize the time picker
+
               timePickerTheme: TimePickerThemeData(
-                dayPeriodColor: newAmpmColor, // Set the background color for AM/PM
-                dayPeriodTextColor: Colors.white, // Text color for AM/PM
-                hourMinuteColor: customGreen, // Background for selected hour/minute
-                hourMinuteTextColor: Colors.white, // Text color for selected hour/minute
-                dialHandColor: customGreen, // Color of the clock hand
+                dayPeriodColor: newAmpmColor,
+                dayPeriodTextColor: Colors.white,
+                hourMinuteColor: customGreen,
+                hourMinuteTextColor: Colors.white,
+                dialHandColor: customGreen,
                 dialTextColor: MaterialStateColor.resolveWith((states) {
                   if (states.contains(MaterialState.selected)) {
-                    return Colors.white; // Color of selected hour/minute text on dial
+                    return Colors.white;
                   }
-                  return Colors.black; // Color of unselected hour/minute text on dial
+                  return Colors.black;
                 }),
-                entryModeIconColor: customGreen, // Color of the keyboard icon
+                entryModeIconColor: customGreen,
               ),
             ),
             child: child!,
@@ -88,13 +87,10 @@ class _ShipmentScreenState extends State<shipment_screen> {
       _selectedIndex = index;
     });
 
-    // Navigate based on the tapped index
+
     switch (index) {
       case 0:
-      // If you still want a home screen, you'll need to define a new one
-      // or remove this case if 'الرئيسية' is no longer needed.
-      // For now, it will do nothing or you can navigate to a default screen.
-      // Example: Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SomeOtherDefaultScreen()));
+
         break;
       case 1:
         Navigator.pushReplacement(
@@ -140,11 +136,11 @@ class _ShipmentScreenState extends State<shipment_screen> {
           iconTheme: IconThemeData(color: customGreen),
         ),
         bottomNavigationBar: BottomNavigationBar(
-          currentIndex: _selectedIndex, // Use the state variable
+          currentIndex: _selectedIndex,
           selectedItemColor: customGreen,
           unselectedItemColor: Colors.grey,
           type: BottomNavigationBarType.fixed,
-          onTap: _onItemTapped, // Add the onTap callback
+          onTap: _onItemTapped,
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: 'الرئيسية'),
             BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), label: 'طلباتي'),
@@ -156,7 +152,7 @@ class _ShipmentScreenState extends State<shipment_screen> {
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              // الوزن - محاذاة لليمين
+
               Container(
                 width: double.infinity,
                 child: Column(
@@ -167,7 +163,7 @@ class _ShipmentScreenState extends State<shipment_screen> {
                 ),
               ),
               SizedBox(height: 16),
-              // النوع - محاذاة لليمين
+
               Container(
                 width: double.infinity,
                 child: Column(
@@ -178,7 +174,7 @@ class _ShipmentScreenState extends State<shipment_screen> {
                 ),
               ),
               SizedBox(height: 16),
-              // الحجم - محاذاة لليمين
+
               Container(
                 width: double.infinity,
                 child: Column(
@@ -189,7 +185,7 @@ class _ShipmentScreenState extends State<shipment_screen> {
                 ),
               ),
               SizedBox(height: 16),
-              // نوع الخدمة - محاذاة لليمين
+
               Container(
                 width: double.infinity,
                 child: Column(
@@ -208,7 +204,7 @@ class _ShipmentScreenState extends State<shipment_screen> {
                       ),
                     ),
                     SizedBox(height: 10),
-                    // فوري ومجدول - محاذاة لليمين
+
                     Align(
                       alignment: Alignment.centerRight,
                       child: Row(
@@ -224,7 +220,7 @@ class _ShipmentScreenState extends State<shipment_screen> {
                   ],
                 ),
               ),
-              // عرض التاريخ والوقت المختار - محاذاة لليمين
+
               if (serviceType == 'مجدول' && selectedDate != null && selectedTime != null)
                 Container(
                   width: double.infinity,
@@ -253,11 +249,11 @@ class _ShipmentScreenState extends State<shipment_screen> {
                   ),
                 ),
               const Spacer(),
-              // زر التالي - محاذاة لليسار
+
               Container(
                 width: double.infinity,
                 child: Align(
-                  alignment: Alignment.centerLeft, // تغيير من centerRight إلى centerLeft
+                  alignment: Alignment.centerLeft,
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.push(
@@ -274,12 +270,12 @@ class _ShipmentScreenState extends State<shipment_screen> {
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
-                      textDirection: TextDirection.ltr, // تغيير الاتجاه لـ LTR
+                      textDirection: TextDirection.ltr,
                       children: const [
-                        // السهم على اليسار متجه لليمين
+
                         Icon(Icons.arrow_forward, color: Colors.white),
                         SizedBox(width: 8),
-                        // النص على اليمين
+
                         Text(
                           'التالي',
                           style: TextStyle(
@@ -335,8 +331,8 @@ class _ShipmentScreenState extends State<shipment_screen> {
               borderRadius: BorderRadius.circular(12),
             ),
             contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            filled: true, // هذه الخاصية تمكن تعبئة الخلفية
-            fillColor: Colors.white, // هذه الخاصية تحدد لون الخلفية إلى الأبيض
+            filled: true,
+            fillColor: Colors.white,
           ),
         ),
       ],

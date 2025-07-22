@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'request_submitted_screen.dart';
-import 'NewOrder.dart';         // Import the NewOrder screen
-import 'FavoritesPage.dart';     // Import the FavoritesPage screen
-import 'AccountPage.dart';       // Import the AccountPage screen
-// If you have a new home screen, import it here, e.g., 'NewHomeScreen.dart'
+import 'NewOrder.dart';
+import 'FavoritesPage.dart';
+import 'AccountPage.dart';
+
 
 class VehicleSelectionScreen extends StatefulWidget {
   const VehicleSelectionScreen({super.key});
@@ -15,19 +15,17 @@ class VehicleSelectionScreen extends StatefulWidget {
 class _VehicleSelectionScreenState extends State<VehicleSelectionScreen> {
   final Color customGreen = const Color(0xFF048372);
   final Color backgroundGray = const Color(0xFFF2F2F2);
-  int _selectedIndex = 0; // Added to manage the selected tab in BottomNavigationBar
+  int _selectedIndex = 0;
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
 
-    // Navigate based on the tapped index
+
     switch (index) {
       case 0:
-      // 'الرئيسية' (Home) - If ClientHomeScreen was removed, this case will do nothing
-      // or you can navigate to a new default home screen if you create one.
-      // Example: Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => NewHomeScreen()));
+
         break;
       case 1:
         Navigator.pushReplacement(
@@ -61,7 +59,7 @@ class _VehicleSelectionScreenState extends State<VehicleSelectionScreen> {
           selectedItemColor: customGreen,
           unselectedItemColor: Colors.grey,
           type: BottomNavigationBarType.fixed,
-          onTap: _onItemTapped, // Add the onTap callback
+          onTap: _onItemTapped,
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: 'الرئيسية'),
             BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), label: 'طلباتي'),
@@ -99,7 +97,7 @@ class _VehicleSelectionScreenState extends State<VehicleSelectionScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // فئة المركبة - محاذاة لليمين
+
                 Container(
                   width: double.infinity,
                   child: Column(
@@ -109,7 +107,7 @@ class _VehicleSelectionScreenState extends State<VehicleSelectionScreen> {
                     ],
                   ),
                 ),
-                // تحديد الوزن - محاذاة لليمين
+                //
                 Container(
                   width: double.infinity,
                   child: Column(
@@ -119,7 +117,7 @@ class _VehicleSelectionScreenState extends State<VehicleSelectionScreen> {
                     ],
                   ),
                 ),
-                // اختر نوع المركبة - محاذاة لليمين
+
                 Container(
                   width: double.infinity,
                   child: Column(
@@ -134,7 +132,7 @@ class _VehicleSelectionScreenState extends State<VehicleSelectionScreen> {
                   ),
                 ),
                 const Spacer(),
-                // زر التالي - نفس التصميم الموحد (على اليسار)
+
                 Container(
                   width: double.infinity,
                   child: Align(
@@ -184,7 +182,7 @@ class _VehicleSelectionScreenState extends State<VehicleSelectionScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        // العنوان محاذاة لليمين
+
         Container(
           width: double.infinity,
           child: Align(
@@ -201,9 +199,9 @@ class _VehicleSelectionScreenState extends State<VehicleSelectionScreen> {
           ),
         ),
         const SizedBox(height: 8),
-        // حقل النص محاذاة لليمين (تم إرجاعه إلى اليمين)
+
         TextFormField(
-          textAlign: TextAlign.right, // تم إرجاعه إلى اليمين
+          textAlign: TextAlign.right,
           textDirection: TextDirection.rtl,
           decoration: InputDecoration(
             hintText: hint,
@@ -221,8 +219,8 @@ class _VehicleSelectionScreenState extends State<VehicleSelectionScreen> {
               borderRadius: BorderRadius.circular(12),
             ),
             contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            filled: true, // تمكين تعبئة الخلفية
-            fillColor: Colors.white, // تعيين لون الخلفية إلى الأبيض
+            filled: true,
+            fillColor: Colors.white,
           ),
         ),
         const SizedBox(height: 16),
@@ -237,7 +235,7 @@ class _VehicleSelectionScreenState extends State<VehicleSelectionScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            // العنوان محاذاة لليمين
+
             Container(
               width: double.infinity,
               child: Align(
@@ -254,7 +252,7 @@ class _VehicleSelectionScreenState extends State<VehicleSelectionScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            // القائمة المنسدلة محاذاة لليمين
+
             Container(
               width: double.infinity,
               child: DropdownButtonFormField<String>(
@@ -274,29 +272,29 @@ class _VehicleSelectionScreenState extends State<VehicleSelectionScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  filled: true, // تمكين تعبئة الخلفية
-                  fillColor: Colors.white, // تعيين لون الخلفية إلى الأبيض
+                  filled: true,
+                  fillColor: Colors.white,
                 ),
                 value: selected,
                 isExpanded: true,
-                // alignment: AlignmentDirectional.centerEnd, // هذا هو الافتراضي لـ RTL مع isExpanded
+
                 style: TextStyle(
                   fontFamily: 'Almarai',
                   color: Colors.black,
                   fontSize: 16,
                 ),
-                // عرض العنصر المختار مع الصورة محاذاة لليمين
+
                 selectedItemBuilder: (BuildContext context) {
                   return items.map<Widget>((Map<String, String> item) {
                     return Container(
                       width: double.infinity,
-                      alignment: Alignment.centerRight, // محاذاة المحتوى لليمين داخل الحقل
+                      alignment: Alignment.centerRight,
                       child: Directionality(
                         textDirection: TextDirection.rtl,
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start, // في RTL، 'start' تعني اليمين
+                          mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            // الصورة على اليمين
+
                             Container(
                               width: 24,
                               height: 24,
@@ -318,7 +316,7 @@ class _VehicleSelectionScreenState extends State<VehicleSelectionScreen> {
                               ),
                             ),
                             const SizedBox(width: 8),
-                            // النص على اليسار من الصورة
+
                             Expanded(
                               child: Text(
                                 item['name']!,
@@ -327,7 +325,7 @@ class _VehicleSelectionScreenState extends State<VehicleSelectionScreen> {
                                   color: Colors.black,
                                   fontSize: 16,
                                 ),
-                                textAlign: TextAlign.right, // محاذاة النص لليمين
+                                textAlign: TextAlign.right,
                               ),
                             ),
                           ],
@@ -339,14 +337,14 @@ class _VehicleSelectionScreenState extends State<VehicleSelectionScreen> {
                 items: items.map((item) {
                   return DropdownMenuItem<String>(
                     value: item['name'],
-                    alignment: AlignmentDirectional.centerEnd, // محاذاة العنصر لليمين في القائمة المنسدلة
+                    alignment: AlignmentDirectional.centerEnd,
                     child: Container(
                       width: double.infinity,
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start, // في RTL، 'start' تعني اليمين
+                        mainAxisAlignment: MainAxisAlignment.start,
                         textDirection: TextDirection.rtl,
                         children: [
-                          // الصورة على اليمين
+
                           Container(
                             width: 30,
                             height: 30,
@@ -368,7 +366,7 @@ class _VehicleSelectionScreenState extends State<VehicleSelectionScreen> {
                             ),
                           ),
                           const SizedBox(width: 12),
-                          // النص على اليسار من الصورة
+
                           Expanded(
                             child: Text(
                               item['name']!,
@@ -377,7 +375,7 @@ class _VehicleSelectionScreenState extends State<VehicleSelectionScreen> {
                                 fontSize: 16,
                                 color: Colors.black,
                               ),
-                              textAlign: TextAlign.right, // محاذاة النص لليمين
+                              textAlign: TextAlign.right,
                               textDirection: TextDirection.rtl,
                             ),
                           ),
