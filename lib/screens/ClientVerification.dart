@@ -44,7 +44,6 @@ class _ClientVerificationPageState extends State<ClientVerificationPage> {
 
   @override
   Widget build(BuildContext context) {
-    // تحديد النص حسب نوع المستخدم
     String title = widget.userType == 'driver'
         ? 'مرحبًا بك كسائق في جرين هب'
         : 'مرحبًا بك في جرين هب';
@@ -103,8 +102,6 @@ class _ClientVerificationPageState extends State<ClientVerificationPage> {
                       style: const TextStyle(fontSize: 14, color: Colors.grey),
                     ),
                     const SizedBox(height: 15),
-
-                    // حقل رقم الجوال مع اختيار الدولة
                     Focus(
                       onFocusChange: (hasFocus) {
                         setState(() {});

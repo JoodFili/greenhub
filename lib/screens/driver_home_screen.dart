@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'orders_screen.dart';
 import 'notification_screen.dart';
+import 'driver_profile_screen.dart'; // ✅ استيراد صفحة حساب السائق
 
 class DriverHomeScreen extends StatelessWidget {
   const DriverHomeScreen({super.key});
@@ -72,7 +73,10 @@ class DriverHomeScreen extends StatelessWidget {
             ),
           ),
           _drawerItem(Icons.person_outline, 'حسابي', () {
-            Navigator.pushNamed(context, '/profile');
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const DriverProfileScreen()),
+            );
           }),
           _drawerItem(Icons.notifications_none, 'الاشعارات', () {
             Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationScreen()));
@@ -243,9 +247,15 @@ class DriverHomeScreen extends StatelessWidget {
       currentIndex: 0,
       onTap: (index) {
         if (index == 3) {
-          Navigator.pushNamed(context, '/profile');
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const DriverProfileScreen()),
+          );
         } else if (index == 1) {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => const OrdersScreen()));
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const OrdersScreen()),
+          );
         }
       },
       selectedItemColor: kPrimaryGreen,
