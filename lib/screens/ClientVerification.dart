@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
+
 import 'VerificationCode.dart';
 
 class ClientVerificationPage extends StatefulWidget {
@@ -13,6 +15,7 @@ class ClientVerificationPage extends StatefulWidget {
 class _ClientVerificationPageState extends State<ClientVerificationPage> {
   final TextEditingController phoneController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
+  bool isLoading = false;
 
   String selectedCountryCode = '+966';
 
@@ -29,16 +32,50 @@ class _ClientVerificationPageState extends State<ClientVerificationPage> {
     super.dispose();
   }
 
-  void _navigateToVerification() {
-    String fullNumber = selectedCountryCode + phoneController.text.trim();
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => VerificationCodePage(
-      phoneNumber: fullNumber,
-      userType: widget.userType,
-    ),
-    ),
+  Future<void> _sendCode() async {
+    if (phoneController.text.trim().isEmpty) {
+      _showSnack('يرجى إدخال رقم الجوال');
+      return;
+    }
+
+    setState(() => isLoading = true);
+
+    final dio = Dio();
+    final fullNumber = selectedCountryCode + phoneController.text.trim();
+
+    try {
+      final response = await dio.post(
+        'http://192.168.1.85:8000/api/send-code', // ✅ عدّل IP حسب جهازك
+        data: {
+          'phone_number': fullNumber,
+          'user_type': widget.userType,
+        },
+        options: Options(contentType: Headers.formUrlEncodedContentType),
+      );
+
+      if (response.data['status'] == true) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => VerificationCodePage(
+              phoneNumber: fullNumber,
+              userType: widget.userType,
+            ),
+          ),
+        );
+      } else {
+        _showSnack(response.data['message'] ?? 'فشل في الإرسال');
+      }
+    } catch (e) {
+      _showSnack('خطأ في الاتصال بالسيرفر');
+    }
+
+    setState(() => isLoading = false);
+  }
+
+  void _showSnack(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
     );
   }
 
@@ -55,7 +92,6 @@ class _ClientVerificationPageState extends State<ClientVerificationPage> {
         backgroundColor: Colors.white,
         body: Stack(
           children: [
-            // الخلفية العلوية
             Container(
               width: double.infinity,
               height: MediaQuery.of(context).size.height * 0.35,
@@ -66,8 +102,6 @@ class _ClientVerificationPageState extends State<ClientVerificationPage> {
                 ),
               ),
             ),
-
-            // زر الرجوع
             Positioned(
               top: 40,
               left: 20,
@@ -78,8 +112,6 @@ class _ClientVerificationPageState extends State<ClientVerificationPage> {
                 },
               ),
             ),
-
-            // المحتوى
             Center(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -159,14 +191,11 @@ class _ClientVerificationPageState extends State<ClientVerificationPage> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 20),
-
-                    // زر تحقق
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: _navigateToVerification,
+                        onPressed: isLoading ? null : _sendCode,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF048372),
                           padding: const EdgeInsets.symmetric(vertical: 15),
@@ -174,7 +203,9 @@ class _ClientVerificationPageState extends State<ClientVerificationPage> {
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
-                        child: const Text(
+                        child: isLoading
+                            ? const CircularProgressIndicator(color: Colors.white)
+                            : const Text(
                           'تحقق',
                           style: TextStyle(
                             fontSize: 16,

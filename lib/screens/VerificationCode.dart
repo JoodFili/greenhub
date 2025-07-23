@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
+import 'package:dio/dio.dart';
 
 import 'ClientHomeScreen.dart';
-import 'driver_home_screen.dart'; // ✅ استيراد واجهة السائق (تأكد من المسار)
+import 'driver_home_screen.dart';
 
 class VerificationCodePage extends StatefulWidget {
   final String phoneNumber;
-  final String userType; // 'client' or 'driver'
+  final String userType;
 
   const VerificationCodePage({
     super.key,
@@ -22,14 +23,12 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
   String verificationCode = "";
   bool isLoading = false;
 
+  final dio = Dio();
+  final String apiBaseUrl = "http://192.168.1.85:8000/api";
+
   void _submitCode() async {
     if (verificationCode.length != 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('يرجى إدخال رمز التحقق كاملاً'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      _showMessage("يرجى إدخال رمز التحقق كاملاً", isError: true);
       return;
     }
 
@@ -37,38 +36,67 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
       isLoading = true;
     });
 
-    await Future.delayed(const Duration(seconds: 2));
+    final url = "$apiBaseUrl/verify-code";
+    final data = {
+      "phone_number": widget.phoneNumber,
+      "code": verificationCode,
+      "user_type": widget.userType,
+    };
 
-    print("رمز التحقق: $verificationCode");
-
-    if (verificationCode == "123456") {
-      Widget nextPage = widget.userType == 'client'
-          ? const ClientHomePage()
-          : const DriverHomeScreen(); // ✅ حط واجهة السائق الصحيحة هنا
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => nextPage),
+    try {
+      final response = await dio.post(
+        url,
+        data: data,
+        options: Options(contentType: Headers.formUrlEncodedContentType),
       );
-    } else {
-      setState(() {
-        isLoading = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('رمز التحقق غير صحيح'),
-          backgroundColor: Colors.red,
-        ),
+
+      if (response.data['status'] == true) {
+        Widget nextPage = widget.userType == 'client'
+            ? const ClientHomePage()
+            : const DriverHomeScreen();
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => nextPage),
+        );
+      } else {
+        _showMessage(response.data['message'] ?? 'رمز التحقق غير صحيح',
+            isError: true);
+      }
+    } catch (e) {
+      _showMessage("حدث خطأ أثناء التحقق. تأكد من الاتصال بالسيرفر.",
+          isError: true);
+    }
+
+    setState(() {
+      isLoading = false;
+    });
+  }
+
+  void _resendCode() async {
+    final url = "$apiBaseUrl/send-code";
+    final data = {
+      "phone_number": widget.phoneNumber,
+      "user_type": widget.userType,
+    };
+
+    try {
+      await dio.post(
+        url,
+        data: data,
+        options: Options(contentType: Headers.formUrlEncodedContentType),
       );
+      _showMessage("تم إعادة إرسال الرمز");
+    } catch (e) {
+      _showMessage("تعذر إرسال الرمز. تحقق من الاتصال.", isError: true);
     }
   }
 
-  void _resendCode() {
-    print("إعادة إرسال الرمز");
+  void _showMessage(String message, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('تم إعادة إرسال الرمز'),
-        backgroundColor: Colors.green,
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red : Colors.green,
       ),
     );
   }
@@ -124,8 +152,7 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
                     PinCodeTextField(
                       appContext: context,
                       length: 6,
-                      onChanged: (value) => setState(() => verificationCode = value),
-                      onCompleted: (value) => verificationCode = value,
+                      onChanged: (value) => verificationCode = value,
                       keyboardType: TextInputType.number,
                       textStyle: const TextStyle(fontSize: 20),
                       pinTheme: PinTheme(
@@ -151,24 +178,26 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
                       onPressed: isLoading ? null : _submitCode,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF048372),
-                        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 50),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 15, horizontal: 50),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
                       child: isLoading
                           ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
                           : const Text(
-                        'تحقق',
-                        style: TextStyle(fontSize: 16, color: Colors.white),
-                      ),
+                              'تحقق',
+                              style:
+                                  TextStyle(fontSize: 16, color: Colors.white),
+                            ),
                     ),
                   ],
                 ),
