@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
+
 import 'ClientHomeScreen.dart';
+import 'driver_home_screen.dart'; // ✅ استيراد واجهة السائق (تأكد من المسار)
 
 class VerificationCodePage extends StatefulWidget {
   final String phoneNumber;
-  VerificationCodePage({required this.phoneNumber});
+  final String userType; // 'client' or 'driver'
+
+  const VerificationCodePage({
+    super.key,
+    required this.phoneNumber,
+    required this.userType,
+  });
 
   @override
   _VerificationCodePageState createState() => _VerificationCodePageState();
@@ -29,22 +37,20 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
       isLoading = true;
     });
 
-    // محاكاة عملية التحقق من الكود
     await Future.delayed(const Duration(seconds: 2));
 
     print("رمز التحقق: $verificationCode");
 
-    // التحقق من صحة الكود - يجب أن يكون 123456
     if (verificationCode == "123456") {
-      // إذا كان الكود صحيح، انتقل إلى الصفحة الرئيسية
+      Widget nextPage = widget.userType == 'client'
+          ? const ClientHomePage()
+          : const DriverHomeScreen(); // ✅ حط واجهة السائق الصحيحة هنا
+
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder: (context) => const ClientHomePage(),
-        ),
+        MaterialPageRoute(builder: (context) => nextPage),
       );
     } else {
-      // إذا كان الكود خاطئ، أظهر رسالة خطأ
       setState(() {
         isLoading = false;
       });
@@ -61,7 +67,7 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
     print("إعادة إرسال الرمز");
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('تم إعادة إرسال '),
+        content: Text('تم إعادة إرسال الرمز'),
         backgroundColor: Colors.green,
       ),
     );
@@ -75,7 +81,6 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
         backgroundColor: Colors.white,
         body: Stack(
           children: [
-            // ✅ خلفية الصورة العلوية
             Container(
               width: double.infinity,
               height: MediaQuery.of(context).size.height * 0.35,
@@ -86,7 +91,6 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
                 ),
               ),
             ),
-            // ✅ زر الرجوع
             Positioned(
               top: 40,
               left: 20,
@@ -95,7 +99,6 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
                 onPressed: () => Navigator.pop(context),
               ),
             ),
-            // ✅ المحتوى
             Center(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -118,7 +121,6 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 20),
-                    // ✅ مربعات الرمز باستخدام pin_code_fields
                     PinCodeTextField(
                       appContext: context,
                       length: 6,
@@ -137,7 +139,6 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    // ✅ إعادة الإرسال
                     TextButton(
                       onPressed: _resendCode,
                       child: const Text(
@@ -146,7 +147,6 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    // ✅ زر تحقق
                     ElevatedButton(
                       onPressed: isLoading ? null : _submitCode,
                       style: ElevatedButton.styleFrom(

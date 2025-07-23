@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
-import 'VerificationCode.dart'; // تأكدي أن اسم الصفحة صح وموجودة
+import 'VerificationCode.dart';
 
 class ClientVerificationPage extends StatefulWidget {
+  final String userType; // 'client' or 'driver'
+
+  const ClientVerificationPage({super.key, required this.userType});
+
   @override
   _ClientVerificationPageState createState() => _ClientVerificationPageState();
 }
@@ -9,7 +13,9 @@ class ClientVerificationPage extends StatefulWidget {
 class _ClientVerificationPageState extends State<ClientVerificationPage> {
   final TextEditingController phoneController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
+
   String selectedCountryCode = '+966';
+
   final Map<String, String> countryFlags = {
     '+966': 'assets/images/saudii.png',
     '+1': 'assets/images/uae.png',
@@ -28,19 +34,29 @@ class _ClientVerificationPageState extends State<ClientVerificationPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => VerificationCodePage(phoneNumber: fullNumber),
-      ),
+        builder: (context) => VerificationCodePage(
+      phoneNumber: fullNumber,
+      userType: widget.userType,
+    ),
+    ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    // تحديد النص حسب نوع المستخدم
+    String title = widget.userType == 'driver'
+        ? 'مرحبًا بك كسائق في جرين هب'
+        : 'مرحبًا بك في جرين هب';
+    String subtitle = 'تسجيل الدخول برقم الجوال';
+
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
         backgroundColor: Colors.white,
         body: Stack(
           children: [
+            // الخلفية العلوية
             Container(
               width: double.infinity,
               height: MediaQuery.of(context).size.height * 0.35,
@@ -51,6 +67,8 @@ class _ClientVerificationPageState extends State<ClientVerificationPage> {
                 ),
               ),
             ),
+
+            // زر الرجوع
             Positioned(
               top: 40,
               left: 20,
@@ -61,27 +79,32 @@ class _ClientVerificationPageState extends State<ClientVerificationPage> {
                 },
               ),
             ),
+
+            // المحتوى
             Center(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const SizedBox(height: 200), // تم إرجاع الارتفاع الثابت
-                    const Text(
-                      'مرحبًا بك في جرين هب',
-                      style: TextStyle(
+                    const SizedBox(height: 200),
+                    Text(
+                      title,
+                      style: const TextStyle(
                         fontSize: 30,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF048372),
                       ),
+                      textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 15),
-                    const Text(
-                      'تسجيل الدخول برقم الجوال',
-                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(fontSize: 14, color: Colors.grey),
                     ),
                     const SizedBox(height: 15),
+
+                    // حقل رقم الجوال مع اختيار الدولة
                     Focus(
                       onFocusChange: (hasFocus) {
                         setState(() {});
@@ -91,7 +114,7 @@ class _ClientVerificationPageState extends State<ClientVerificationPage> {
                           border: Border.all(
                             color: _focusNode.hasFocus
                                 ? const Color(0xFF048372)
-                                : Colors.grey, // تم إرجاع اللون الأصلي للحدود
+                                : Colors.grey,
                           ),
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -131,7 +154,6 @@ class _ClientVerificationPageState extends State<ClientVerificationPage> {
                                 decoration: const InputDecoration(
                                   labelText: 'رقم الجوال',
                                   border: InputBorder.none,
-                                  // تم إزالة floatingLabelBehavior: FloatingLabelBehavior.never,
                                 ),
                                 keyboardType: TextInputType.phone,
                               ),
@@ -140,21 +162,27 @@ class _ClientVerificationPageState extends State<ClientVerificationPage> {
                         ),
                       ),
                     ),
+
                     const SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: _navigateToVerification,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF048372),
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+
+                    // زر تحقق
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _navigateToVerification,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF048372),
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
-                      ),
-                      child: const Text(
-                        'تحقق',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.white,
+                        child: const Text(
+                          'تحقق',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),

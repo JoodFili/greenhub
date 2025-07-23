@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'ClientVerification.dart'; // ✅ يبقى كما هو للعميل
-import 'driver_profile_screen.dart'; // ✅ إضافة استيراد صفحة السائق
+import 'ClientVerification.dart'; // ✅ فيها تعديل صغير، شوف تحت
 
 class SplashhPage extends StatelessWidget {
   const SplashhPage({super.key});
@@ -10,7 +9,7 @@ class SplashhPage extends StatelessWidget {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: Colors.white, // ✅ خلفية بيضاء
+        backgroundColor: Colors.white,
         body: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -21,7 +20,7 @@ class SplashhPage extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF048372), // ✅ أخضر غامق
+                  color: Color(0xFF048372),
                 ),
               ),
               const SizedBox(height: 10),
@@ -29,22 +28,25 @@ class SplashhPage extends StatelessWidget {
                 'اختر طريقة الدخول',
                 style: TextStyle(
                   fontSize: 16,
-                  color: Colors.grey[600], // ✅ رمادي فاتح
+                  color: Colors.grey,
                 ),
               ),
               const SizedBox(height: 40),
+
+              // زر العميل
               SizedBox(
                 width: 250,
                 child: ElevatedButton(
                   onPressed: () {
-                    // ✅ يبقى كما هو - الانتقال كعميل إلى ClientVerificationPage
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => ClientVerificationPage()),
+                      MaterialPageRoute(
+                        builder: (context) => const ClientVerificationPage(userType: 'client'),
+                      ),
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF048372), // ✅ زر أخضر
+                    backgroundColor: const Color(0xFF048372),
                     padding: const EdgeInsets.symmetric(vertical: 15),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -54,20 +56,24 @@ class SplashhPage extends StatelessWidget {
                     'الدخول كعميل',
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.white, // ✅ نص أبيض
+                      color: Colors.white,
                     ),
                   ),
                 ),
               ),
+
               const SizedBox(height: 20),
+
+              // زر السائق
               SizedBox(
                 width: 250,
                 child: ElevatedButton(
                   onPressed: () {
-
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const DriverProfileScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const ClientVerificationPage(userType: 'driver'),
+                      ),
                     );
                   },
                   style: ElevatedButton.styleFrom(
