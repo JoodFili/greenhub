@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'ClientHomeScreen.dart';
 import 'driver_home_screen.dart';
@@ -26,15 +27,19 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
   final dio = Dio();
   final String apiBaseUrl = "http://192.168.1.85:8000/api";
 
+  //  دالة لحفظ التوكن
+  Future<void> saveToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('auth_token', token);
+  }
+
   void _submitCode() async {
     if (verificationCode.length != 6) {
       _showMessage("يرجى إدخال رمز التحقق كاملاً", isError: true);
       return;
     }
 
-    setState(() {
-      isLoading = true;
-    });
+    setState(() => isLoading = true);
 
     final url = "$apiBaseUrl/verify-code";
     final data = {
@@ -51,6 +56,11 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
       );
 
       if (response.data['status'] == true) {
+        final token = response.data['token'];
+        if (token != null) {
+          await saveToken(token);
+        }
+
         Widget nextPage = widget.userType == 'client'
             ? const ClientHomePage()
             : const DriverHomeScreen();
@@ -68,9 +78,7 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
           isError: true);
     }
 
-    setState(() {
-      isLoading = false;
-    });
+    setState(() => isLoading = false);
   }
 
   void _resendCode() async {
