@@ -58,19 +58,40 @@ class DriverHomeScreen extends StatelessWidget {
                   ),
                 ),
                 Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      CircleAvatar(
-                        radius: 35,
-                        backgroundImage: AssetImage('assets/images/driver.jpg'),
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        'نوفا أسامة',
-                        style: TextStyle(color: Colors.white, fontSize: 18),
-                      ),
-                    ],
+                  child: FutureBuilder(
+                    future: SharedPreferences.getInstance(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return const CircularProgressIndicator();
+                      }
+
+                      final prefs = snapshot.data!;
+                      final name =
+                          prefs.getString('user_name') ?? 'اسم المستخدم';
+                      final imageUrl = prefs.getString('user_image');
+
+                      return Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircleAvatar(
+                            radius: 35,
+                            backgroundImage: imageUrl != null &&
+                                    imageUrl.isNotEmpty
+                                ? NetworkImage(imageUrl)
+                                : const AssetImage('assets/images/driver.jpg')
+                                    as ImageProvider,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            name,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ),
               ],
@@ -101,8 +122,10 @@ class DriverHomeScreen extends StatelessWidget {
           const Divider(),
           _drawerItem(Icons.logout, 'الخروج', () async {
             final prefs = await SharedPreferences.getInstance();
-            await prefs.remove('token'); // حذف التوكن
-            await prefs.remove('userType'); // حذف نوع المستخدم
+            await prefs.remove('auth_token');
+            await prefs.remove('user_type');
+            await prefs.remove('user_name');
+            await prefs.remove('user_image');
             Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(builder: (_) => OnboardingPage()),

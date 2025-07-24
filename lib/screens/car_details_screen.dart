@@ -33,8 +33,8 @@ class _CarDetailsScreenState extends State<CarDetailsScreen> {
   }
 
   OutlineInputBorder _greenBorder() => const OutlineInputBorder(
-    borderSide: BorderSide(color: DriverProfileScreen.kPrimaryGreen),
-  );
+        borderSide: BorderSide(color: Color(0xFF048372)),
+      );
 
   void _handleSave() {
     final type = _typeCtrl.text.trim();
@@ -66,7 +66,7 @@ class _CarDetailsScreenState extends State<CarDetailsScreen> {
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (_) => const DriverHomeScreen()),
-          (route) => false,
+      (route) => false,
     );
   }
 
@@ -75,10 +75,10 @@ class _CarDetailsScreenState extends State<CarDetailsScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       appBar: AppBar(
-        leading: const BackButton(color: DriverProfileScreen.kPrimaryGreen),
+        leading: const BackButton(color: Color(0xFF048372)),
         title: const Text('تفاصيل المركبة',
             style: TextStyle(
-                color: DriverProfileScreen.kPrimaryGreen,
+                color: Color(0xFF048372),
                 fontSize: 25,
                 fontFamily: 'Almarai',
                 fontWeight: FontWeight.bold)),
@@ -107,10 +107,11 @@ class _CarDetailsScreenState extends State<CarDetailsScreen> {
                     child: ElevatedButton(
                       onPressed: _handleSave,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: DriverProfileScreen.kPrimaryGreen,
+                        backgroundColor: Color(0xFF048372),
                         elevation: 0,
                       ),
-                      child: const Text('الحفظ', style: TextStyle(color: Colors.white)),
+                      child: const Text('الحفظ',
+                          style: TextStyle(color: Colors.white)),
                     ),
                   ),
                 ),
@@ -135,7 +136,8 @@ class _CarDetailsScreenState extends State<CarDetailsScreen> {
             enabledBorder: _greenBorder(),
             focusedBorder: _greenBorder(),
             border: _greenBorder(),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
           ),
         ),
         const SizedBox(height: 16),

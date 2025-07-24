@@ -35,7 +35,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
         ),
         title: const Text('تفاصيل الطلب',
             style: TextStyle(
-                color: DriverProfileScreen.kPrimaryGreen,
+                color: kPrimaryGreen,
                 fontSize: 25,
                 fontFamily: 'Almarai',
                 fontWeight: FontWeight.bold)),

@@ -19,8 +19,7 @@ class _OrdersScreenState extends State<OrdersScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this,
-        initialIndex: 0);
+    _tabController = TabController(length: 3, vsync: this, initialIndex: 0);
   }
 
   @override
@@ -38,12 +37,11 @@ class _OrdersScreenState extends State<OrdersScreen>
         centerTitle: true,
         title: const Text('الطلبات',
             style: TextStyle(
-                color: DriverProfileScreen.kPrimaryGreen,
+                color: Color(0xFF048372),
                 fontSize: 25,
                 fontFamily: 'Almarai',
                 fontWeight: FontWeight.bold)),
         bottom: TabBar(
-
           controller: _tabController,
           labelColor: Color(0xFF048372),
           unselectedLabelColor: Color(0xFFAECF5C),
@@ -65,15 +63,20 @@ class _OrdersScreenState extends State<OrdersScreen>
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 1,
-        selectedItemColor: DriverProfileScreen.kPrimaryGreen,
+        selectedItemColor: const Color(0xFF048372),
         unselectedItemColor: Colors.grey,
         showSelectedLabels: true,
         showUnselectedLabels: true,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'الرئيسية'),
-          BottomNavigationBarItem(icon: Icon(Icons.list_alt_outlined), label: 'الطلبات'),
-          BottomNavigationBarItem(icon: Icon(Icons.account_balance_wallet_outlined), label: 'المحفظة'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'حسابي'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.home_outlined), label: 'الرئيسية'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.list_alt_outlined), label: 'الطلبات'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.account_balance_wallet_outlined),
+              label: 'المحفظة'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.person_outline), label: 'حسابي'),
         ],
       ),
     );
