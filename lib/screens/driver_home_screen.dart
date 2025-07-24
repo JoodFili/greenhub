@@ -4,6 +4,7 @@ import 'orders_screen.dart';
 import 'notification_screen.dart';
 import 'driver_profile_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'car_details_screen.dart';
 
 class DriverHomeScreen extends StatelessWidget {
   const DriverHomeScreen({super.key});
@@ -90,6 +91,12 @@ class DriverHomeScreen extends StatelessWidget {
                 MaterialPageRoute(builder: (_) => const OrdersScreen()));
           }),
           _drawerItem(Icons.account_balance_wallet_outlined, 'المحفظة', () {}),
+          _drawerItem(Icons.car_repair_sharp, 'تفاصيل المركبة', () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const CarDetailsScreen()),
+            );
+          }),
           const Spacer(),
           const Divider(),
           _drawerItem(Icons.logout, 'الخروج', () async {

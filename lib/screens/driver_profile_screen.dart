@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'car_details_screen.dart';
+import 'driver_home_screen.dart';
 
 class DriverProfileScreen extends StatefulWidget {
   const DriverProfileScreen({super.key});
@@ -53,8 +54,8 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
   }
 
   OutlineInputBorder _greenBorder() => const OutlineInputBorder(
-    borderSide: BorderSide(color: DriverProfileScreen.kPrimaryGreen),
-  );
+        borderSide: BorderSide(color: DriverProfileScreen.kPrimaryGreen),
+      );
 
   String? _validateNotEmpty(String? value) {
     if (value == null || value.trim().isEmpty) {
@@ -65,7 +66,8 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
 
   String? _validatePhone(String? value) {
     if (value == null || value.trim().isEmpty) return 'رقم الجوال مطلوب';
-    if (!RegExp(r'^\d{9}$').hasMatch(value)) return 'رقم الجوال يجب أن يكون 9 أرقام';
+    if (!RegExp(r'^\d{9}$').hasMatch(value))
+      return 'رقم الجوال يجب أن يكون 9 أرقام';
     return null;
   }
 
@@ -107,25 +109,32 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
                     onTap: _pickImage,
                     child: CircleAvatar(
                       radius: 50,
-                      backgroundImage: _imageFile != null ? FileImage(_imageFile!) : null,
+                      backgroundImage:
+                          _imageFile != null ? FileImage(_imageFile!) : null,
                       child: _imageFile == null
-                          ? const Icon(Icons.camera_alt, size: 40, color: Colors.grey)
+                          ? const Icon(Icons.camera_alt,
+                              size: 40, color: Colors.grey)
                           : null,
                       backgroundColor: Colors.grey[200],
                     ),
                   ),
                   const SizedBox(height: 20),
-                  _buildTextField('الاسم:', _nameController, validator: _validateNotEmpty),
-                  _buildTextField('رقم الهوية:', _idController, validator: _validateNotEmpty),
+                  _buildTextField('الاسم:', _nameController,
+                      validator: _validateNotEmpty),
+                  _buildTextField('رقم الهوية:', _idController,
+                      validator: _validateNotEmpty),
                   _buildDateField(),
                   _buildTextField('رقم الجوال:', _phoneController,
                       keyboard: TextInputType.phone, validator: _validatePhone),
                   _buildTextField('الإيميل:', _emailController,
-                      keyboard: TextInputType.emailAddress, validator: _validateEmail),
+                      keyboard: TextInputType.emailAddress,
+                      validator: _validateEmail),
                   _buildCityDropdown(),
                   const SizedBox(height: 10),
                   if (_errorText != null && _errorText!.isNotEmpty)
-                    Text(_errorText!, style: const TextStyle(color: Colors.red), textAlign: TextAlign.center),
+                    Text(_errorText!,
+                        style: const TextStyle(color: Colors.red),
+                        textAlign: TextAlign.center),
                   const SizedBox(height: 20),
                   Align(
                     child: SizedBox(
@@ -135,17 +144,21 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
                         onPressed: () {
                           if (_formKey.currentState!.validate()) {
                             if (_selectedDate == null) {
-                              setState(() => _errorText = 'يرجى اختيار تاريخ الميلاد');
+                              setState(() =>
+                                  _errorText = 'يرجى اختيار تاريخ الميلاد');
                               return;
                             }
                             if (_selectedCity == null) {
-                              setState(() => _errorText = 'يرجى اختيار المدينة');
+                              setState(
+                                  () => _errorText = 'يرجى اختيار المدينة');
                               return;
                             }
                             setState(() => _errorText = '');
-                            Navigator.push(
+                            Navigator.pushAndRemoveUntil(
                               context,
-                              MaterialPageRoute(builder: (_) => const CarDetailsScreen()),
+                              MaterialPageRoute(
+                                  builder: (_) => const DriverHomeScreen()),
+                              (route) => false,
                             );
                           }
                         },
@@ -153,8 +166,11 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
                           backgroundColor: DriverProfileScreen.kPrimaryGreen,
                           elevation: 0,
                         ),
-                        child: const Text('التالي',
-                            style: TextStyle(fontSize: 16, fontFamily: 'Almarai', color: Colors.white)),
+                        child: const Text('الحفظ',
+                            style: TextStyle(
+                                fontSize: 16,
+                                fontFamily: 'Almarai',
+                                color: Colors.white)),
                       ),
                     ),
                   ),
@@ -168,7 +184,8 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
   }
 
   Widget _buildTextField(String label, TextEditingController controller,
-      {TextInputType keyboard = TextInputType.text, String? Function(String?)? validator}) {
+      {TextInputType keyboard = TextInputType.text,
+      String? Function(String?)? validator}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -183,7 +200,8 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
             enabledBorder: _greenBorder(),
             focusedBorder: _greenBorder(),
             border: _greenBorder(),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
           ),
         ),
         const SizedBox(height: 16),
@@ -211,7 +229,8 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
                   ? 'اختر تاريخ الميلاد'
                   : '${_selectedDate!.year}-${_selectedDate!.month}-${_selectedDate!.day}',
               textAlign: TextAlign.right,
-              style: TextStyle(color: _selectedDate == null ? Colors.grey : Colors.black),
+              style: TextStyle(
+                  color: _selectedDate == null ? Colors.grey : Colors.black),
             ),
           ),
         ),
@@ -231,12 +250,15 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
             border: _greenBorder(),
             enabledBorder: _greenBorder(),
             focusedBorder: _greenBorder(),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
           ),
           iconEnabledColor: DriverProfileScreen.kPrimaryGreen,
           value: _selectedCity,
           validator: (value) => value == null ? 'اختر مدينة' : null,
-          items: _cities.map((city) => DropdownMenuItem(value: city, child: Text(city))).toList(),
+          items: _cities
+              .map((city) => DropdownMenuItem(value: city, child: Text(city)))
+              .toList(),
           onChanged: (value) => setState(() => _selectedCity = value),
         ),
         const SizedBox(height: 16),
