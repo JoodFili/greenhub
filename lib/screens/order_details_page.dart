@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
 import 'driver_profile_screen.dart';
+import 'driver_home_screen.dart';
 
 class OrderDetailsPage extends StatefulWidget {
-  final String orderId;          // مثال: 8977
+  final String orderId; // مثال: 8977
   const OrderDetailsPage({super.key, required this.orderId});
 
   @override
@@ -56,7 +57,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
               // بطاقة التفاصيل
               Container(
                 padding:
-                const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
                 decoration: BoxDecoration(
                   border: Border.all(color: kPrimaryGreen, width: 1.4),
                   borderRadius: BorderRadius.circular(12),
@@ -71,25 +72,25 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                 alignment: Alignment.centerRight,
                 child: Text('السعر المقترح:',
                     style:
-                    TextStyle(color: Colors.grey.shade800, fontSize: 16)),
+                        TextStyle(color: Colors.grey.shade800, fontSize: 16)),
               ),
               const SizedBox(height: 6),
               TextField(
                 controller: _priceCtrl,
                 keyboardType:
-                const TextInputType.numberWithOptions(decimal: true),
+                    const TextInputType.numberWithOptions(decimal: true),
                 decoration: InputDecoration(
                   contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide:
-                    const BorderSide(color: kPrimaryGreen, width: 1.2),
+                        const BorderSide(color: kPrimaryGreen, width: 1.2),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide:
-                    const BorderSide(color: kPrimaryGreen, width: 1.7),
+                        const BorderSide(color: kPrimaryGreen, width: 1.7),
                   ),
                 ),
               ),
@@ -120,9 +121,9 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
   /// يبني العمود اللي داخل البطاقة
   Widget _detailsTable() {
     const labelStyle =
-    TextStyle(fontSize: 15, fontWeight: FontWeight.w500, height: 1.6);
+        TextStyle(fontSize: 15, fontWeight: FontWeight.w500, height: 1.6);
     const valueStyle =
-    TextStyle(fontSize: 15, fontWeight: FontWeight.w400, height: 1.6);
+        TextStyle(fontSize: 15, fontWeight: FontWeight.w400, height: 1.6);
 
     // بيانات ثابتة تجريبية – غيّـريها لاحقاً من الـ API
     const labels = [
@@ -203,8 +204,7 @@ class _OfferSentDialog extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             // أيقونة صح
-            const Icon(Icons.verified_rounded,
-                size: 58, color: kPrimaryGreen),
+            const Icon(Icons.verified_rounded, size: 58, color: kPrimaryGreen),
             const SizedBox(height: 14),
             const Text('تم إرسال العرض بنجاح!',
                 textAlign: TextAlign.center,
@@ -215,15 +215,18 @@ class _OfferSentDialog extends StatelessWidget {
               height: 40,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                    backgroundColor: kPrimaryGreen,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(6))),
+                  backgroundColor: kPrimaryGreen,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6)),
+                ),
                 child: const Text('العودة إلى الرئيسية'),
                 onPressed: () {
-                  Navigator.popUntil(context, (route) => route.isFirst);
-
-                  // Navigator.pop(context);
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (_) => const DriverHomeScreen()),
+                    (route) => false,
+                  );
                 },
               ),
             ),

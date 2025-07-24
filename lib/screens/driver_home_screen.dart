@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:greenhub/screens/PageView.dart';
 import 'orders_screen.dart';
 import 'notification_screen.dart';
-import 'driver_profile_screen.dart'; // ✅ استيراد صفحة حساب السائق
+import 'driver_profile_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DriverHomeScreen extends StatelessWidget {
   const DriverHomeScreen({super.key});
@@ -17,7 +19,8 @@ class DriverHomeScreen extends StatelessWidget {
       bottomNavigationBar: _buildBottomNavBar(context),
       body: SafeArea(
         child: DefaultTextStyle.merge(
-          style: const TextStyle(fontFamily: 'Almarai', fontWeight: FontWeight.bold),
+          style: const TextStyle(
+              fontFamily: 'Almarai', fontWeight: FontWeight.bold),
           child: SingleChildScrollView(
             child: Column(
               children: [
@@ -79,27 +82,42 @@ class DriverHomeScreen extends StatelessWidget {
             );
           }),
           _drawerItem(Icons.notifications_none, 'الاشعارات', () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationScreen()));
+            Navigator.push(context,
+                MaterialPageRoute(builder: (_) => const NotificationScreen()));
           }),
           _drawerItem(Icons.list_alt_outlined, 'الطلبات', () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const OrdersScreen()));
+            Navigator.push(context,
+                MaterialPageRoute(builder: (_) => const OrdersScreen()));
           }),
           _drawerItem(Icons.account_balance_wallet_outlined, 'المحفظة', () {}),
           const Spacer(),
           const Divider(),
-          _drawerItem(Icons.logout, 'الخروج', () {}, color: Colors.red),
-          const SizedBox(height: 20),
+          _drawerItem(Icons.logout, 'الخروج', () async {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.remove('token'); // حذف التوكن
+            await prefs.remove('userType'); // حذف نوع المستخدم
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (_) => OnboardingPage()),
+              (route) => false,
+            );
+          }, color: Colors.red),
         ],
       ),
     );
   }
 
-  Widget _drawerItem(IconData icon, String title, VoidCallback onTap, {Color color = kIconGray}) {
+  Widget _drawerItem(IconData icon, String title, VoidCallback onTap,
+      {Color color = kIconGray}) {
     return ListTile(
       leading: Icon(icon, color: color),
       title: Text(
         title,
-        style: TextStyle(fontSize: 15, fontFamily: 'Almarai', fontWeight: FontWeight.w600, color: color),
+        style: TextStyle(
+            fontSize: 15,
+            fontFamily: 'Almarai',
+            fontWeight: FontWeight.w600,
+            color: color),
         textAlign: TextAlign.right,
       ),
       onTap: onTap,
@@ -126,14 +144,16 @@ class DriverHomeScreen extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              const Text('الصفحة الرئيسية', style: TextStyle(color: Colors.white, fontSize: 25)),
+              const Text('الصفحة الرئيسية',
+                  style: TextStyle(color: Colors.white, fontSize: 25)),
               const Spacer(),
               GestureDetector(
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const NotificationScreen()),
                 ),
-                child: const Icon(Icons.notifications_none, color: Colors.white, size: 26),
+                child: const Icon(Icons.notifications_none,
+                    color: Colors.white, size: 26),
               ),
             ],
           ),
@@ -141,7 +161,8 @@ class DriverHomeScreen extends StatelessWidget {
         Positioned(
           bottom: 0,
           right: 0,
-          child: Image.asset('assets/images/car1.png', height: 150, fit: BoxFit.contain),
+          child: Image.asset('assets/images/car1.png',
+              height: 150, fit: BoxFit.contain),
         ),
         const Positioned(
           bottom: -20,
@@ -169,9 +190,11 @@ class DriverHomeScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 24),
-          const Text('خدماتك', textAlign: TextAlign.right, style: TextStyle(fontSize: 32)),
+          const Text('خدماتك',
+              textAlign: TextAlign.right, style: TextStyle(fontSize: 32)),
           const SizedBox(height: 4),
-          const Text('اختر الخدمة التي تناسبك', textAlign: TextAlign.right, style: TextStyle(fontSize: 13)),
+          const Text('اختر الخدمة التي تناسبك',
+              textAlign: TextAlign.right, style: TextStyle(fontSize: 13)),
           const SizedBox(height: 16),
           Row(
             children: [
@@ -190,7 +213,10 @@ class DriverHomeScreen extends StatelessWidget {
                   icon: Icons.all_inbox,
                   title: 'طلبات العملاء',
                   onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const OrdersScreen()));
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const OrdersScreen()));
                   },
                   subtitle1: 'طلبات العملاء',
                   subtitle2: 'اعرض وابدأ بالتوصيل الآن',
@@ -227,9 +253,11 @@ class DriverHomeScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: const [
-                      Text('شارك الرابط الخاص فيك', style: TextStyle(fontSize: 16, color: kPrimaryGreen)),
+                      Text('شارك الرابط الخاص فيك',
+                          style: TextStyle(fontSize: 16, color: kPrimaryGreen)),
                       SizedBox(height: 4),
-                      Text('واحصل على نقاط مكافأة', style: TextStyle(fontSize: 12)),
+                      Text('واحصل على نقاط مكافأة',
+                          style: TextStyle(fontSize: 12)),
                     ],
                   ),
                 ),
@@ -264,10 +292,15 @@ class DriverHomeScreen extends StatelessWidget {
       showUnselectedLabels: true,
       type: BottomNavigationBarType.fixed,
       items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'الرئيسية'),
-        BottomNavigationBarItem(icon: Icon(Icons.list_alt_outlined), label: 'الطلبات'),
-        BottomNavigationBarItem(icon: Icon(Icons.account_balance_wallet_outlined), label: 'المحفظة'),
-        BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'حسابي'),
+        BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined), label: 'الرئيسية'),
+        BottomNavigationBarItem(
+            icon: Icon(Icons.list_alt_outlined), label: 'الطلبات'),
+        BottomNavigationBarItem(
+            icon: Icon(Icons.account_balance_wallet_outlined),
+            label: 'المحفظة'),
+        BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline), label: 'حسابي'),
       ],
     );
   }
@@ -319,9 +352,12 @@ class ServiceCard extends StatelessWidget {
                 children: [
                   Text(subtitle1,
                       style: const TextStyle(
-                          color: Color(0xFF048372), fontWeight: FontWeight.bold, fontSize: 16)),
+                          color: Color(0xFF048372),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16)),
                   const SizedBox(height: 2),
-                  Text(subtitle2, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                  Text(subtitle2,
+                      style: const TextStyle(color: Colors.grey, fontSize: 12)),
                 ],
               ),
             ),
