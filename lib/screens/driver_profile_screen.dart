@@ -23,6 +23,7 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
   final TextEditingController _idController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _docsController = TextEditingController();
   String? _selectedCity;
 
   final List<String> _cities = ['الرياض', 'جدة', 'الدمام', 'مكة', 'المدينة'];
@@ -129,6 +130,8 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
                   _buildTextField('الإيميل:', _emailController,
                       keyboard: TextInputType.emailAddress,
                       validator: _validateEmail),
+                  _buildTextField('المستندات:', _docsController,
+                      validator: _validateNotEmpty),
                   _buildCityDropdown(),
                   const SizedBox(height: 10),
                   if (_errorText != null && _errorText!.isNotEmpty)
