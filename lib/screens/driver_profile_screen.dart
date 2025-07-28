@@ -41,7 +41,7 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
 
   Future<void> _initData() async {
     final prefs = await SharedPreferences.getInstance();
-    _token = prefs.getString('auth_token');
+    final token = prefs.getString('auth_token');
 
     _nameController.text = prefs.getString('name') ?? '';
     _emailController.text = prefs.getString('email') ?? '';
@@ -113,11 +113,6 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
     }
     print('TOKEN = $_token');
 
-    String? base64Image;
-    if (_imageFile != null) {
-      base64Image = base64Encode(await _imageFile!.readAsBytes());
-    }
-
     final formData = FormData.fromMap({
       "name": _nameController.text.trim(),
       "email": _emailController.text.trim(),
@@ -125,7 +120,7 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
       "birth_date": _selectedDate!.toIso8601String(),
       "city": _selectedCity,
       "phone": _phoneController.text.trim(),
-      "documents": base64Image ?? _docsController.text.trim(),
+      "documents": _docsController.text.trim(),
     });
 
     try {
@@ -165,13 +160,20 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
             MaterialPageRoute(builder: (_) => const DriverHomeScreen()),
             (r) => false);
       } else {
-        print("Response body: ${response.data}");
-        setState(() =>
-            _errorText = response.data['message'] ?? 'فشل في تحديث البيانات');
+        setState(() {
+          _errorText = response.data['message'] ?? 'فشل في تحديث البيانات';
+        });
       }
-    } catch (e) {
-      print('Server error: $e');
-      setState(() => _errorText = 'خطأ في الاتصال بالسيرفر');
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 422) {
+        print('Validation error: ${e.response?.data}');
+        setState(() {
+          _errorText = e.response?.data['message'] ?? 'خطأ في البيانات المرسلة';
+        });
+      } else {
+        print('Unexpected error: ${e.message}');
+        setState(() => _errorText = 'حدث خطأ غير متوقع');
+      }
     }
   }
 
