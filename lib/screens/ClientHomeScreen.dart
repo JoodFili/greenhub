@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:greenhub/screens/PageView.dart';
 import 'shipment_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'AccountPage.dart';
 
 class ClientHomePage extends StatefulWidget {
   const ClientHomePage({super.key});
@@ -59,6 +60,10 @@ class _ClientHomePageState extends State<ClientHomePage> {
               ),
               _drawerItem(Icons.person_outline, 'حسابي', () {
                 Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AccountPage()),
+                );
               }),
               _drawerItem(Icons.notifications_none, 'الإشعارات', () {
                 Navigator.pop(context);
@@ -89,7 +94,16 @@ class _ClientHomePageState extends State<ClientHomePage> {
         bottomNavigationBar: BottomNavigationBar(
           type: BottomNavigationBarType.fixed,
           currentIndex: _selectedIndex,
-          onTap: (index) => setState(() => _selectedIndex = index),
+          onTap: (index) {
+            if (index == 3) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AccountPage()),
+              );
+            } else {
+              setState(() => _selectedIndex = index);
+            }
+          },
           selectedItemColor: const Color(0xFF048372),
           unselectedItemColor: Colors.grey,
           showUnselectedLabels: true,

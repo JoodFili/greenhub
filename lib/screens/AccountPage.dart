@@ -1,8 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-// import 'HomePage.dart';
-// import 'PresentOrder.dart';
-// import 'FavoritesPage.dart';
+import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AccountPage extends StatefulWidget {
   const AccountPage({super.key});
@@ -15,58 +15,98 @@ class _AccountPageState extends State<AccountPage> {
   final Color greenColor = const Color(0xFF048372);
   final Color grayColor = const Color(0xFFF6F6F6);
 
-  //   النموذج للتحقق من صحة الحقول
   final _formKey = GlobalKey<FormState>();
-  //  المتحكمات لحقول النص
-  final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _phoneController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  String? _selectedCity; // لتخزين القيمة المختارة من القائمة المنسدلة
-  int currentIndex = 3;
+  final _usernameController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _emailController = TextEditingController();
+  String? _selectedCity;
+  String? _token;
 
-  void onBottomNavItemTapped(int index) {
-    setState(() {
-      currentIndex = index;
-    });
-    // مثال:
-    // if (index == 0) {
-    //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomePage()));
-    // } else if (index == 1) { // طلباتي
-    //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const NewOrder())); // أو PresentOrder أو PastOrder
-    // } else if (index == 2) { // المفضلة
-    //   // لا شيء، لأن هذه الصفحة هي المفضلة
-    // } else if (index == 3) { // حسابي
-    //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const AccountPage()));
-    // }
-  }
+  final List<String> _cities = ['جدة', 'الرياض', 'مكة'];
 
-////////////////////////////////////////////////////////////////////////////////////////
   @override
   void initState() {
     super.initState();
-    //  تعيين قيم افتراضية للمتحكمات عند تهيئة الصفحة
-    _usernameController.text = 'اسم المستخدم الحالي';
-    _phoneController.text = '05xxxxxxxx';
-    _emailController.text = 'example@email.com';
-    _selectedCity = null; // لا يوجد اختيار افتراضي للمدينة
+    _loadData();
   }
 
-  @override
-  void dispose() {
-    //  التخلص من المتحكمات عند إغلاق الصفحة لتجنب تسرب الذاكرة
-    _usernameController.dispose();
-    _phoneController.dispose();
-    _emailController.dispose();
-    super.dispose();
+  Future<void> _loadData() async {
+    final prefs = await SharedPreferences.getInstance();
+    _token = prefs.getString('auth_token');
+
+    _usernameController.text = prefs.getString('name') ?? '';
+    _phoneController.text = prefs.getString('phone') ?? '';
+    _emailController.text = prefs.getString('email') ?? '';
+    _selectedCity = prefs.getString('city');
+    setState(() {});
   }
 
-///////////////////////////////////////////////////////////////////////////////////////
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate() || _selectedCity == null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: const Text('يرجى تعبئة جميع الحقول'),
+        backgroundColor: Colors.red,
+      ));
+      return;
+    }
+
+    if (_token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: const Text('المستخدم غير مسجل الدخول'),
+        backgroundColor: Colors.red,
+      ));
+      return;
+    }
+
+    final formData = FormData.fromMap({
+      "name": _usernameController.text.trim(),
+      "email": _emailController.text.trim(),
+      "phone": _phoneController.text.trim(),
+      "city": _selectedCity,
+    });
+
+    try {
+      final response = await Dio().post(
+        "http://192.168.1.85:8000/api/profile",
+        data: formData,
+        options: Options(
+          headers: {
+            "Authorization": "Bearer $_token",
+            "Accept": "application/json",
+          },
+        ),
+      );
+
+      if (response.statusCode == 200 && response.data['status'] == true) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('name', _usernameController.text.trim());
+        await prefs.setString('email', _emailController.text.trim());
+        await prefs.setString('phone', _phoneController.text.trim());
+        await prefs.setString('city', _selectedCity!);
+
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: const Text('تم حفظ التعديلات بنجاح'),
+          backgroundColor: greenColor,
+        ));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(response.data['message'] ?? 'فشل في تحديث البيانات'),
+          backgroundColor: Colors.red,
+        ));
+      }
+    } on DioException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(e.response?.data['message'] ?? 'حدث خطأ غير متوقع'),
+        backgroundColor: Colors.red,
+      ));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        ////////////////////////////////////////
         backgroundColor: grayColor,
         appBar: AppBar(
           backgroundColor: Colors.white,
@@ -81,184 +121,102 @@ class _AccountPageState extends State<AccountPage> {
             ),
           ),
           leading: IconButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
+            onPressed: () => Navigator.pop(context),
             icon: Icon(Icons.arrow_back_ios, color: greenColor),
           ),
         ),
-        ////////////////////////////////////////
-
-//nav bar////////////////////////////////////////////////////////////////////////////
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: currentIndex,
-          onTap: onBottomNavItemTapped,
-          selectedItemColor: greenColor,
-          unselectedItemColor: Colors.grey,
-          type: BottomNavigationBarType.fixed,
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'الرئيسية'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.inventory_2_outlined), label: 'طلباتي'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.favorite_border), label: 'المفضلة'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.person_outline), label: 'حسابي'),
-          ],
-        ),
-///////////////////////////////////////////////////////////////////////////////////////
-
-
         body: SafeArea(
-          child: Column(
-            children: [
-              const SizedBox(height: 20),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Form(
-                    key: _formKey, // تعيين المفتاح للنموذج
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        _buildTextFormField(
-                          label: 'اسم المستخدم',
-                          controller: _usernameController,
-                          hintText: 'أدخل اسم المستخدم',
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'الرجاء إدخال اسم المستخدم';
-                            }
-                            return null;
-                          },
-                          //  إضافة inputFormatters للسماح بالعربية والإنجليزية والأرقام والمسافات
-                          inputFormatters: [
-                            FilteringTextInputFormatter.allow(
-                                RegExp(r'[\u0600-\u06FFa-zA-Z0-9\s]')),
-                          ],
-                        ),
-                        _buildTextFormField(
-                          label: 'رقم الجوال',
-                          controller: _phoneController,
-                          hintText: '05xxxxxxxx',
-                          keyboardType: TextInputType.phone,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'الرجاء إدخال رقم الجوال';
-                            }
-                            if (!value.startsWith('05') ||
-                                value.length != 10 ||
-                                !RegExp(r'^[0-9]+$').hasMatch(value)) {
-                              return 'الرجاء إدخال رقم جوال سعودي صحيح (يبدأ بـ 05 و10 أرقام)';
-                            }
-                            return null;
-                          },
-                        ),
-                        _buildTextFormField(
-                          label: 'البريد الإلكتروني',
-                          controller: _emailController,
-                          hintText: 'example@email.com',
-                          keyboardType: TextInputType.emailAddress,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'الرجاء إدخال البريد الإلكتروني';
-                            }
-                            if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
-                                .hasMatch(value)) {
-                              return 'الرجاء إدخال بريد إلكتروني صحيح';
-                            }
-                            return null;
-                          },
-                        ),
-                        _buildDropdownFormField(
-                          label: 'المدينة',
-                          value: _selectedCity,
-                          hintText: 'اختر المدينة',
-                          items: const ['جدة', 'الرياض', 'مكة'],
-                          onChanged: (newValue) {
-                            setState(() {
-                              _selectedCity = newValue;
-                            });
-                          },
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'الرجاء اختيار المدينة';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 12),
-                        //  زر حفظ التعديلات
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: SizedBox(
-                            width: 150,
-                            child: ElevatedButton(
-                              onPressed: () {
-                                //  تشغيل التحقق عند الضغط على الزر
-                                if (_formKey.currentState!.validate()) {
-                                  // إذا كانت جميع الحقول صحيحة
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('تم حفظ التعديلات بنجاح!'),
-                                      backgroundColor: greenColor,
-                                    ),
-                                  );
-                                  // هنا يمكنك حفظ البيانات (مثلاً إرسالها إلى API)
-                                  print(
-                                      'اسم المستخدم: ${_usernameController.text}');
-                                  print('رقم الجوال: ${_phoneController.text}');
-                                  print(
-                                      'البريد الإلكتروني: ${_emailController.text}');
-                                  print('المدينة: $_selectedCity');
-                                } else {
-                                  // إذا كانت هناك أخطاء في التحقق
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                          'الرجاء تصحيح الأخطاء في النموذج.'),
-                                      backgroundColor: Colors.red,
-                                    ),
-                                  );
-                                }
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: greenColor,
-                                padding:
-                                const EdgeInsets.symmetric(vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                              child: const Text(
-                                'حفظ التعديلات',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontFamily: 'Almarai',
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildTextField(
+                    label: 'اسم المستخدم',
+                    controller: _usernameController,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'الرجاء إدخال اسم المستخدم';
+                      }
+                      return null;
+                    },
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(
+                        RegExp(r'[\u0600-\u06FFa-zA-Z0-9\s]'),
+                      ),
+                    ],
+                  ),
+                  _buildTextField(
+                    label: 'رقم الجوال',
+                    controller: _phoneController,
+                    keyboardType: TextInputType.phone,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'الرجاء إدخال رقم الجوال';
+                      }
+                      if (!value.startsWith('05') ||
+                          value.length != 10 ||
+                          !RegExp(r'^[0-9]+$').hasMatch(value)) {
+                        return 'رقم الجوال يجب أن يبدأ بـ 05 ويتكون من 10 أرقام';
+                      }
+                      return null;
+                    },
+                  ),
+                  _buildTextField(
+                    label: 'البريد الإلكتروني',
+                    controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'الرجاء إدخال البريد الإلكتروني';
+                      }
+                      if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                        return 'البريد الإلكتروني غير صالح';
+                      }
+                      return null;
+                    },
+                  ),
+                  _buildDropdownField(),
+                  const SizedBox(height: 20),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: SizedBox(
+                      width: 150,
+                      child: ElevatedButton(
+                        onPressed: _submit,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: greenColor,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
                           ),
                         ),
-                      ],
+                        child: const Text(
+                          'حفظ التعديلات',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontFamily: 'Almarai',
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  //  دالة بناء حقول النص مع التحقق
-  Widget _buildTextFormField({
+  Widget _buildTextField({
     required String label,
     required TextEditingController controller,
-    String? hintText,
     TextInputType? keyboardType,
     String? Function(String?)? validator,
     List<TextInputFormatter>? inputFormatters,
@@ -266,17 +224,12 @@ class _AccountPageState extends State<AccountPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(bottom: 6),
-          child: Text(
-            label,
+        Text(label,
             style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Almarai',
-              fontSize: 16,
-            ),
-          ),
-        ),
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Almarai',
+                fontSize: 16)),
+        const SizedBox(height: 6),
         Container(
           margin: const EdgeInsets.only(bottom: 16),
           decoration: BoxDecoration(
@@ -285,23 +238,18 @@ class _AccountPageState extends State<AccountPage> {
             borderRadius: BorderRadius.circular(10),
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(
-                horizontal: 12), // تعديل المسافة الداخلية
+            padding: const EdgeInsets.symmetric(horizontal: 12),
             child: TextFormField(
-              //  استخدام TextFormField
               controller: controller,
               keyboardType: keyboardType,
-              validator: validator, //  إضافة validator
+              validator: validator,
+              inputFormatters: inputFormatters,
               style: const TextStyle(fontFamily: 'Almarai'),
-              inputFormatters: inputFormatters, //  استخدام المعامل الجديد هنا
               decoration: InputDecoration(
-                hintText: hintText,
                 hintStyle:
-                TextStyle(color: Colors.grey[400], fontFamily: 'Almarai'),
-                border: InputBorder
-                    .none, // إزالة الحدود الافتراضية لـ TextFormField
-                contentPadding: const EdgeInsets.symmetric(
-                    vertical: 14), // ضبط المسافة الرأسية
+                    TextStyle(color: Colors.grey[400], fontFamily: 'Almarai'),
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(vertical: 14),
               ),
             ),
           ),
@@ -310,29 +258,19 @@ class _AccountPageState extends State<AccountPage> {
     );
   }
 
-  //  دالة بناء القائمة المنسدلة مع التحقق
-  Widget _buildDropdownFormField({
-    required String label,
-    required String? value,
-    required String hintText,
-    required List<String> items,
-    required void Function(String?) onChanged,
-    String? Function(String?)? validator,
-  }) {
+  Widget _buildDropdownField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(bottom: 6),
-          child: Text(
-            label,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Almarai',
-              fontSize: 16,
-            ),
+        const Text(
+          'المدينة',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Almarai',
+            fontSize: 16,
           ),
         ),
+        const SizedBox(height: 6),
         Container(
           margin: const EdgeInsets.only(bottom: 16),
           decoration: BoxDecoration(
@@ -343,23 +281,22 @@ class _AccountPageState extends State<AccountPage> {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: DropdownButtonFormField<String>(
-              //  استخدام DropdownButtonFormField
-              value: value,
-              hint: Text(hintText,
+              value: _selectedCity,
+              hint: Text('اختر المدينة',
                   style: TextStyle(
-                      fontFamily: 'Almarai', color: Colors.grey[400])),
-              items: items
+                      color: Colors.grey[400], fontFamily: 'Almarai')),
+              items: _cities
                   .map((item) => DropdownMenuItem(
-                  value: item,
-                  child: Text(item,
-                      style: const TextStyle(fontFamily: 'Almarai'))))
+                      value: item,
+                      child: Text(item,
+                          style: const TextStyle(fontFamily: 'Almarai'))))
                   .toList(),
-              onChanged: onChanged,
-              validator: validator, //validator
+              onChanged: (value) => setState(() => _selectedCity = value),
+              validator: (value) =>
+                  value == null ? 'الرجاء اختيار المدينة' : null,
               decoration: const InputDecoration(
-                border: InputBorder.none, // إزالة الحدود الافتراضية
-                contentPadding:
-                EdgeInsets.symmetric(vertical: 8), // ضبط المسافة الرأسية
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(vertical: 8),
               ),
             ),
           ),
