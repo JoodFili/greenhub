@@ -24,7 +24,7 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
   String verificationCode = "";
   bool isLoading = false;
   final dio = Dio();
-  final String apiBaseUrl = "http://192.168.1.85:8000/api";
+  final String apiBaseUrl = "http://10.0.2.2:8000/api";
 
   Future<void> saveToken(String token) async {
     final prefs = await SharedPreferences.getInstance();

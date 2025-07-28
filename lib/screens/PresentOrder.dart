@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'NewOrder.dart';
 import 'PastOrder.dart';
 import 'Details.dart';
-// import 'HomePage.dart';
-// import 'AddFavorate.dart';
-// import 'AccountPage.dart';
+import 'ClientHomeScreen.dart';
+import 'AccountPage.dart';
+import 'FavoritesPage.dart'; // استيراد صفحة المفضلة
+import 'AddFavorate.dart';
 
 class PresentOrder extends StatefulWidget {
   const PresentOrder({super.key});
@@ -24,20 +25,31 @@ class _PresentOrderState extends State<PresentOrder> {
     setState(() {
       currentIndex = index;
     });
-    // مثال:
-    // if (index == 0) {
-    //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomePage()));
-    // } else if (index == 1) { // طلباتي
-    //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const NewOrder())); // أو PresentOrder أو PastOrder
-    // } else if (index == 2) { // المفضلة
-    //   // لا شيء، لأن هذه الصفحة هي المفضلة
-    // } else if (index == 3) { // حسابي
-    //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const AccountPage()));
-    // }
+
+    if (index == 0) {
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+              builder: (context) => const ClientHomePage()));
+    } else if (index == 1) {
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+              builder: (context) => const NewOrder()));
+    } else if (index == 2) {
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+              builder: (context) => const FavoritesPage())); // هنا فتح صفحة المفضلة
+    } else if (index == 3) {
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+              builder: (context) => const AccountPage()));
+    }
   }
 
-
-  //  دالة التنقل بين التابات ////////////////////////////
+  //  دالة التنقل بين التابات في AppBar
   void navigateToTab(String label) {
     if (label == 'الجديدة') {
       Navigator.pushReplacement(
@@ -45,7 +57,7 @@ class _PresentOrderState extends State<PresentOrder> {
         MaterialPageRoute(builder: (context) => const NewOrder()),
       );
     } else if (label == 'الحالية') {
-      // لا شيء، لأنها الصفحة الحالية
+      // لا شيء لأنها الصفحة الحالية
     } else if (label == 'السابقة') {
       Navigator.pushReplacement(
         context,
@@ -53,17 +65,14 @@ class _PresentOrderState extends State<PresentOrder> {
       );
     }
   }
-  ////////////////////////////////////////////////////////
 
-  // دالة للانتقال إلى صفحة التفاصيل////////////////////
+  // دالة للانتقال إلى صفحة التفاصيل
   void navigateToDetailsPage() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const Details()), //  افترضي أن اسم صفحة التفاصيل هو DetailsPage
+      MaterialPageRoute(builder: (context) => const Details()),
     );
   }
-/////////////////////////////////////////////////////////
-
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +80,6 @@ class _PresentOrderState extends State<PresentOrder> {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         backgroundColor: grayColor,
-        ///  AppBar مع التابات بداخله
         appBar: AppBar(
           backgroundColor: Colors.white,
           centerTitle: true,
@@ -90,11 +98,10 @@ class _PresentOrderState extends State<PresentOrder> {
             },
             icon: Icon(Icons.arrow_back_ios, color: greenColor),
           ),
-/////////////////appbar- tap///////////////////////////////////////////////////
           bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(50), // ارتفاع شريط التابات
+            preferredSize: const Size.fromHeight(50),
             child: Container(
-              color: Colors.white, // خلفية شريط التابات
+              color: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 10),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -105,7 +112,7 @@ class _PresentOrderState extends State<PresentOrder> {
                   ),
                   GestureDetector(
                     onTap: () => navigateToTab('الحالية'),
-                    child: tabItem('الحالية', true, greenColor), // التاب النشط
+                    child: tabItem('الحالية', true, greenColor),
                   ),
                   GestureDetector(
                     onTap: () => navigateToTab('السابقة'),
@@ -116,22 +123,19 @@ class _PresentOrderState extends State<PresentOrder> {
             ),
           ),
         ),
-///////////////// end appbar\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
         body: SafeArea(
           child: Column(
             children: [
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 16), // مسافة الاطراف
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Column(
                     children: [
-
-                      const SizedBox(height: 16), //  مسافة 16 بكسل من الأعلى
-
-                      // =========================================================== كرت 1 =========================
+                      const SizedBox(height: 16),
+                      // كرت 1
                       Container(
                         margin: const EdgeInsets.only(bottom: 16),
-                        padding: const EdgeInsets.all(30), // حجم المربع ارتفاعه
+                        padding: const EdgeInsets.all(30),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(16),
@@ -140,7 +144,6 @@ class _PresentOrderState extends State<PresentOrder> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            //  (أعلى اليمين في RTL) ويشير لليمين
                             Align(
                               alignment: Alignment.topLeft,
                               child: GestureDetector(
@@ -160,7 +163,6 @@ class _PresentOrderState extends State<PresentOrder> {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            ///
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -189,10 +191,10 @@ class _PresentOrderState extends State<PresentOrder> {
                           ],
                         ),
                       ),
-                      // ==================================================== كرت 2 =================================
+                      // كرت 2
                       Container(
                         margin: const EdgeInsets.only(bottom: 16),
-                        padding: const EdgeInsets.all(30), // حجم المربع ارتفاعه
+                        padding: const EdgeInsets.all(30),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(16),
@@ -201,14 +203,13 @@ class _PresentOrderState extends State<PresentOrder> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-
                             Align(
                               alignment: Alignment.topLeft,
                               child: GestureDetector(
                                 onTap: navigateToDetailsPage,
                                 child: Icon(
                                   Icons.arrow_forward_ios,
-                                  color: lightgreen, // لون السهم
+                                  color: lightgreen,
                                 ),
                               ),
                             ),
@@ -221,7 +222,6 @@ class _PresentOrderState extends State<PresentOrder> {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            ///
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -250,12 +250,12 @@ class _PresentOrderState extends State<PresentOrder> {
                           ],
                         ),
                       ),
-                      // ======================================== كرت 3 =======================================================
+                      // كرت 3
                       Container(
                         margin: const EdgeInsets.only(bottom: 16),
-                        padding: const EdgeInsets.all(30), // حجم المربع وارتفاعه
+                        padding: const EdgeInsets.all(30),
                         decoration: BoxDecoration(
-                          color: lightgreen, // لون خلفية الكرت
+                          color: lightgreen,
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Column(
@@ -271,24 +271,22 @@ class _PresentOrderState extends State<PresentOrder> {
                                 ),
                               ),
                             ),
-                            // وسم "مجدول"
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                               decoration: BoxDecoration(
-                                color: greenColor, // لون خلفية الوسم
+                                color: greenColor,
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: const Text(
                                 'مجدول',
                                 style: TextStyle(
                                   fontFamily: 'Almarai',
-                                  color: Colors.white, // لون نص الوسم
+                                  color: Colors.white,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
                             const SizedBox(height: 3),
-                            // رقم الطلب والتاريخ
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: const [
@@ -313,46 +311,43 @@ class _PresentOrderState extends State<PresentOrder> {
                           ],
                         ),
                       ),
-                      // ================================================ كرت 4 =======================
+                      // كرت 4
                       Container(
                         margin: const EdgeInsets.only(bottom: 16),
-                        padding: const EdgeInsets.all(30), // حجم المربع وارتفاعه
+                        padding: const EdgeInsets.all(30),
                         decoration: BoxDecoration(
-                          color: lightgreen, // لون خلفية الكرت
+                          color: lightgreen,
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // ✅ السهم في مكانه الأصلي (أعلى اليمين في RTL) ويشير لليمين
                             Align(
                               alignment: Alignment.topLeft,
                               child: GestureDetector(
                                 onTap: navigateToDetailsPage,
                                 child: Icon(
                                   Icons.arrow_forward_ios,
-                                  color: Colors.white, // لون السهم أبيض ليتناسب مع الخلفية
+                                  color: Colors.white,
                                 ),
                               ),
                             ),
-                            // وسم "مجدول"
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                               decoration: BoxDecoration(
-                                color: greenColor, // لون خلفية الوسم
+                                color: greenColor,
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: const Text(
                                 'مجدول',
                                 style: TextStyle(
                                   fontFamily: 'Almarai',
-                                  color: Colors.white, // لون نص الوسم
+                                  color: Colors.white,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
                             const SizedBox(height: 3),
-                            // رقم الطلب والتاريخ
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: const [
@@ -384,8 +379,6 @@ class _PresentOrderState extends State<PresentOrder> {
             ],
           ),
         ),
-//nav bar////////////////////////////////////////////////////////////////////////////
-        //backgroundColor: grayColor,
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: currentIndex,
           onTap: onBottomNavItemTapped,
@@ -402,12 +395,10 @@ class _PresentOrderState extends State<PresentOrder> {
                 icon: Icon(Icons.person_outline), label: 'حسابي'),
           ],
         ),
-///////////////////////////////////////////////////////////////////////////////////////
       ),
     );
   }
 
-  //  دالة tabItem لمساعدة في بناء التابات (موحدة عبر الصفحات)
   Widget tabItem(String label, bool selected, [Color? selectedColor]) {
     return Column(
       children: [
@@ -424,7 +415,7 @@ class _PresentOrderState extends State<PresentOrder> {
           Container(
             margin: const EdgeInsets.only(top: 4),
             height: 2,
-            width: 60, // w
+            width: 60,
             color: selectedColor ?? Colors.black,
           )
       ],

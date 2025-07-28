@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:greenhub/screens/FavoritesPage.dart';
-// import 'HomePage.dart';
-// import 'NewOrder.dart';
-// import 'AccountPage.dart';
+import 'ClientHomeScreen.dart';
+import 'PresentOrder.dart';
+import 'FavoritesPage.dart';
+import 'AccountPage.dart';
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
@@ -20,18 +21,17 @@ class _NotificationsPageState extends State<NotificationsPage> {
     setState(() {
       currentIndex = index;
     });
-    // مثال:
-    // if (index == 0) {
-    //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomePage()));
-    // } else if (index == 1) { // طلباتي
-    //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const NewOrder())); // أو PresentOrder أو PastOrder
-    // } else if (index == 2) { // المفضلة
-    //   // لا شيء، لأن هذه الصفحة هي المفضلة
-    // } else if (index == 3) { // حسابي
-    //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const AccountPage()));
-    // }
-  }
 
+    if (index == 0) {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const ClientHomePage()));
+    } else if (index == 1) {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const PresentOrder()));
+    } else if (index == 2) {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const FavoritesPage()));
+    } else if (index == 3) {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const AccountPage()));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,8 +39,25 @@ class _NotificationsPageState extends State<NotificationsPage> {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         backgroundColor: grayColor,
-//nav bar////////////////////////////////////////////////////////////////////////////
-        //backgroundColor: grayColor,
+
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          centerTitle: true,
+          title: Text(
+            'الإشعارات',
+            style: TextStyle(
+              color: greenColor,
+              fontFamily: 'Almarai',
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          leading: IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: Icon(Icons.arrow_back_ios, color: greenColor),
+          ),
+        ),
+
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: currentIndex,
           onTap: onBottomNavItemTapped,
@@ -49,38 +66,16 @@ class _NotificationsPageState extends State<NotificationsPage> {
           type: BottomNavigationBarType.fixed,
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: 'الرئيسية'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.inventory_2_outlined), label: 'طلباتي'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.favorite_border), label: 'المفضلة'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.person_outline), label: 'حسابي'),
+            BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), label: 'طلباتي'),
+            BottomNavigationBarItem(icon: Icon(Icons.favorite_border), label: 'المفضلة'),
+            BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'حسابي'),
           ],
         ),
-///////////////////////////////////////////////////////////////////////////////////////
+
         body: SafeArea(
           child: Column(
             children: [
-////////////////////////////////////////////
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                color: Colors.white,
-                child: Center(
-                  child: Text(
-                    'الإشعارات',
-                    style: TextStyle(
-                      fontFamily: 'Almarai',
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: greenColor,
-                    ),
-                  ),
-                ),
-              ),
               const SizedBox(height: 16),
-///////////////////////////////////////////
-              ///
               Expanded(
                 child: ListView(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -104,11 +99,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
     );
   }
 
-  Widget _notificationTile(
-      String code,
-      String message, {
-        bool isPromo = false,
-      }) {
+  Widget _notificationTile(String code, String message, {bool isPromo = false}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),

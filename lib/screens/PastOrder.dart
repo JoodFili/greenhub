@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'NewOrder.dart';
 import 'PresentOrder.dart';
 import 'Details.dart';
-// import 'HomePage.dart';
-// import 'AddFavorate.dart';
-// import 'AccountPage.dart';
+import 'ClientHomeScreen.dart'; // تأكد استيراد الصفحة الصحيحة
+import 'AccountPage.dart';
+import 'FavoritesPage.dart'; // إذا عندك صفحة المفضلة بهذا الاسم
 
 class PastOrder extends StatefulWidget {
   const PastOrder({super.key});
@@ -17,24 +17,33 @@ class _PastOrderState extends State<PastOrder> {
   final Color greenColor = const Color(0xFF048372);
   final Color lightGreen = const Color(0x80AECF5C);
   final Color grayColor = const Color(0xFFF6F6F6);
-  int currentIndex = 1;
+  int currentIndex = 2; // لأن هذه الصفحة هي "السابقة"
 
   void onBottomNavItemTapped(int index) {
     setState(() {
       currentIndex = index;
     });
-    // مثال:
-    // if (index == 0) {
-    //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomePage()));
-    // } else if (index == 1) { // طلباتي
-    //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const NewOrder())); // أو PresentOrder أو PastOrder
-    // } else if (index == 2) { // المفضلة
-    //   // لا شيء، لأن هذه الصفحة هي المفضلة
-    // } else if (index == 3) { // حسابي
-    //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const AccountPage()));
-    // }
+
+    if (index == 0) {
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const ClientHomePage()));
+    } else if (index == 1) {
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const NewOrder()));
+    } else if (index == 2) {
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const PastOrder()));
+    } else if (index == 3) {
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const AccountPage()));
+    }
   }
-//  دالة التنقل بين التابات ////////////////////////////
+
+  // دالة التنقل بين التابات أعلى الـ AppBar
   void navigateToTab(String label) {
     if (label == 'الجديدة') {
       Navigator.pushReplacement(
@@ -42,26 +51,22 @@ class _PastOrderState extends State<PastOrder> {
         MaterialPageRoute(builder: (context) => const NewOrder()),
       );
     } else if (label == 'الحالية') {
-      // لا شيء، لأنها الصفحة الحالية
-    } else if (label == 'السابقة') {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const PastOrder()),
+        MaterialPageRoute(builder: (context) => const PresentOrder()),
       );
+    } else if (label == 'السابقة') {
+      // لا شيء لأنها الصفحة الحالية
     }
   }
-  ////////////////////////////////////////////////////////
 
-  // دالة للانتقال إلى صفحة التفاصيل////////////////////
+  // الانتقال لصفحة التفاصيل
   void navigateToDetailsPage() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-          builder: (context) =>
-          const Details()), //  افترضي أن اسم صفحة التفاصيل هو DetailsPage
+      MaterialPageRoute(builder: (context) => const Details()),
     );
   }
-/////////////////////////////////////////////////////////
 
   @override
   Widget build(BuildContext context) {
@@ -69,8 +74,6 @@ class _PastOrderState extends State<PastOrder> {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         backgroundColor: grayColor,
-
-        ///  AppBar مع التابات بداخله
         appBar: AppBar(
           backgroundColor: Colors.white,
           centerTitle: true,
@@ -89,7 +92,6 @@ class _PastOrderState extends State<PastOrder> {
             },
             icon: Icon(Icons.arrow_back_ios, color: greenColor),
           ),
-          /////////////////appbar- tap///////////////////////////////////////////////////
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(50),
             child: Container(
@@ -108,14 +110,13 @@ class _PastOrderState extends State<PastOrder> {
                   ),
                   GestureDetector(
                     onTap: () => navigateToTab('السابقة'),
-                    child: tabItem('السابقة', true, greenColor), // التاب النشط
+                    child: tabItem('السابقة', true, greenColor),
                   ),
                 ],
               ),
             ),
           ),
         ),
-//////////////// end appbar\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
         body: SafeArea(
           child: Column(
             children: [
@@ -124,15 +125,13 @@ class _PastOrderState extends State<PastOrder> {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Column(
                     children: [
-                      //  إضافة مسافة علوية هنا
                       const SizedBox(height: 16),
                       ...List.generate(5, (index) {
-                        //ععد الكروت
                         return Container(
                           margin: const EdgeInsets.only(bottom: 16),
                           padding: const EdgeInsets.all(30),
                           decoration: BoxDecoration(
-                            color: lightGreen, // لون خلفية الكرت
+                            color: lightGreen,
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Column(
@@ -190,8 +189,6 @@ class _PastOrderState extends State<PastOrder> {
             ],
           ),
         ),
-//nav bar////////////////////////////////////////////////////////////////////////////
-        //backgroundColor: grayColor,
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: currentIndex,
           onTap: onBottomNavItemTapped,
@@ -208,12 +205,10 @@ class _PastOrderState extends State<PastOrder> {
                 icon: Icon(Icons.person_outline), label: 'حسابي'),
           ],
         ),
-///////////////////////////////////////////////////////////////////////////////////////
       ),
     );
   }
 
-  //  دالة tabItem لمساعدة في بناء التابات (موحدة عبر الصفحات)
   Widget tabItem(String label, bool selected, [Color? selectedColor]) {
     return Column(
       children: [

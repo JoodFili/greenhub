@@ -1,8 +1,13 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:greenhub/screens/PageView.dart';
+import 'FavoritesPage.dart';
 import 'shipment_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'AccountPage.dart';
+import 'PresentOrder.dart'; // صفحة تتبع الطلب
+import 'NotificationsPage.dart'; // صفحة الإشعارات
 
 class ClientHomePage extends StatefulWidget {
   const ClientHomePage({super.key});
@@ -12,7 +17,36 @@ class ClientHomePage extends StatefulWidget {
 }
 
 class _ClientHomePageState extends State<ClientHomePage> {
-  int _selectedIndex = 0;
+  int currentIndex = 0; // عوضًا عن _selectedIndex
+  final Color greenColor = const Color(0xFF048372);
+
+  void onBottomNavItemTapped(int index) {
+    setState(() {
+      currentIndex = index;
+    });
+
+    if (index == 0) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const ClientHomePage()),
+      );
+    } else if (index == 1) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const PresentOrder()),
+      );
+    } else if (index == 2) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const FavoritesPage()),
+      );
+    } else if (index == 3) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const AccountPage()),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,12 +101,18 @@ class _ClientHomePageState extends State<ClientHomePage> {
               }),
               _drawerItem(Icons.notifications_none, 'الإشعارات', () {
                 Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const NotificationsPage()),
+                );
               }),
               _drawerItem(Icons.favorite_border, 'المفضلة', () {
                 Navigator.pop(context);
-              }),
-              _drawerItem(Icons.headset_mic_outlined, 'خدمة العملاء', () {
-                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => FavoritesPage()),
+                );
               }),
               const Spacer(),
               const Divider(),
@@ -92,27 +132,19 @@ class _ClientHomePageState extends State<ClientHomePage> {
           ),
         ),
         bottomNavigationBar: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          currentIndex: _selectedIndex,
-          onTap: (index) {
-            if (index == 3) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => AccountPage()),
-              );
-            } else {
-              setState(() => _selectedIndex = index);
-            }
-          },
-          selectedItemColor: const Color(0xFF048372),
+          currentIndex: currentIndex,
+          onTap: onBottomNavItemTapped,
+          selectedItemColor: greenColor,
           unselectedItemColor: Colors.grey,
-          showUnselectedLabels: true,
+          type: BottomNavigationBarType.fixed,
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: 'الرئيسية'),
             BottomNavigationBarItem(
-                icon: Icon(Icons.local_shipping), label: 'طلباتي'),
-            BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'محادثاتي'),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'حسابي'),
+                icon: Icon(Icons.inventory_2_outlined), label: 'طلباتي'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.favorite_border), label: 'المفضلة'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.person_outline), label: 'حسابي'),
           ],
         ),
         body: SingleChildScrollView(
@@ -132,12 +164,15 @@ class _ClientHomePageState extends State<ClientHomePage> {
                     ),
                     child: Padding(
                       padding:
-                          const EdgeInsets.only(top: 50, right: 20, left: 20),
+                          const EdgeInsets.only(top: 50, right: 20, left: 20,bottom: 100),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Icon(Icons.notifications,
-                              color: Colors.white, size: 28),
+
+                          // زر الجرس في الأعلى يمين
+                          IconButton(onPressed: (){
+                            Navigator.of(context).push(MaterialPageRoute(builder: (ctx)=>NotificationsPage()));
+                          }, icon: Icon(Icons.notifications,color: Colors.white,size: 24,)),
                           const Text(
                             'الصفحة الرئيسية',
                             style: TextStyle(
@@ -155,6 +190,7 @@ class _ClientHomePageState extends State<ClientHomePage> {
                               },
                             ),
                           ),
+
                         ],
                       ),
                     ),
@@ -220,7 +256,11 @@ class _ClientHomePageState extends State<ClientHomePage> {
                             icon: Icons.track_changes,
                             title: 'تتبع الطلب',
                             onTap: () {
-                              print('تتبع الطلب');
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const PresentOrder()),
+                              );
                             },
                           ),
                         ),
@@ -229,7 +269,7 @@ class _ClientHomePageState extends State<ClientHomePage> {
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 30),
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
@@ -252,8 +292,9 @@ class _ClientHomePageState extends State<ClientHomePage> {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(15),
                         border: Border.all(
-                            color: const Color(0xFF048372).withOpacity(0.3),
-                            width: 1),
+                          color: const Color(0xFF048372).withOpacity(0.3),
+                          width: 1,
+                        ),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.05),
@@ -331,6 +372,7 @@ class ServiceCard extends StatelessWidget {
   final IconData icon;
   final String title;
   final VoidCallback? onTap;
+
   const ServiceCard({
     super.key,
     required this.icon,

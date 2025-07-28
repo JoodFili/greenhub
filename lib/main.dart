@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart'; // مهم جداً
+import 'package:greenhub/screens/ClientHomeScreen.dart';
 import 'package:greenhub/screens/PageView.dart';
 
 
@@ -30,6 +31,7 @@ class MyApp extends StatelessWidget {
 
       //home: shipment_screen(),
       home: OnboardingPage(),
+    //  home: ClientHomePage(),
 
     );
   }

@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'ClientHomeScreen.dart';
+import 'PresentOrder.dart';
+import 'FavoritesPage.dart';
 
 class AccountPage extends StatefulWidget {
   const AccountPage({super.key});
@@ -24,6 +27,8 @@ class _AccountPageState extends State<AccountPage> {
 
   final List<String> _cities = ['جدة', 'الرياض', 'مكة'];
 
+  int currentIndex = 3; // لأن حسابي هو التاب رقم 3 في الناف بار
+
   @override
   void initState() {
     super.initState();
@@ -39,6 +44,34 @@ class _AccountPageState extends State<AccountPage> {
     _emailController.text = prefs.getString('email') ?? '';
     _selectedCity = prefs.getString('city');
     setState(() {});
+  }
+
+  void onBottomNavItemTapped(int index) {
+    setState(() {
+      currentIndex = index;
+    });
+
+    if (index == 0) {
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const ClientHomePage(),
+          ));
+    } else if (index == 1) {
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const PresentOrder(),
+          ));
+    } else if (index == 2) {
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const FavoritesPage(),
+          ));
+    } else if (index == 3) {
+      // انت حالياً في صفحة حسابي، فلا حاجة للتنقل
+    }
   }
 
   Future<void> _submit() async {
@@ -124,6 +157,19 @@ class _AccountPageState extends State<AccountPage> {
             onPressed: () => Navigator.pop(context),
             icon: Icon(Icons.arrow_back_ios, color: greenColor),
           ),
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: currentIndex,
+          onTap: onBottomNavItemTapped,
+          selectedItemColor: greenColor,
+          unselectedItemColor: Colors.grey,
+          type: BottomNavigationBarType.fixed,
+          items: const [
+            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'الرئيسية'),
+            BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), label: 'طلباتي'),
+            BottomNavigationBarItem(icon: Icon(Icons.favorite_border), label: 'المفضلة'),
+            BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'حسابي'),
+          ],
         ),
         body: SafeArea(
           child: SingleChildScrollView(
@@ -247,7 +293,7 @@ class _AccountPageState extends State<AccountPage> {
               style: const TextStyle(fontFamily: 'Almarai'),
               decoration: InputDecoration(
                 hintStyle:
-                    TextStyle(color: Colors.grey[400], fontFamily: 'Almarai'),
+                TextStyle(color: Colors.grey[400], fontFamily: 'Almarai'),
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(vertical: 14),
               ),
@@ -287,13 +333,13 @@ class _AccountPageState extends State<AccountPage> {
                       color: Colors.grey[400], fontFamily: 'Almarai')),
               items: _cities
                   .map((item) => DropdownMenuItem(
-                      value: item,
-                      child: Text(item,
-                          style: const TextStyle(fontFamily: 'Almarai'))))
+                  value: item,
+                  child: Text(item,
+                      style: const TextStyle(fontFamily: 'Almarai'))))
                   .toList(),
               onChanged: (value) => setState(() => _selectedCity = value),
               validator: (value) =>
-                  value == null ? 'الرجاء اختيار المدينة' : null,
+              value == null ? 'الرجاء اختيار المدينة' : null,
               decoration: const InputDecoration(
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.symmetric(vertical: 8),
@@ -305,3 +351,6 @@ class _AccountPageState extends State<AccountPage> {
     );
   }
 }
+
+
+

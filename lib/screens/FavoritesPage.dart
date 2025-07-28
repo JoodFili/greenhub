@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'AddFavorate.dart';
-
-// import 'HomePage.dart';
-// import 'NewOrder.dart';
-// import 'PresentOrder.dart';
-// import 'PastOrder.dart';
-// import 'AccountPage.dart';
+import 'ClientHomeScreen.dart';
+import 'PresentOrder.dart';
+import 'FavoritesPage.dart';
+import 'AccountPage.dart';
 
 class FavoritesPage extends StatefulWidget {
   const FavoritesPage({super.key});
@@ -24,16 +22,17 @@ class _FavoritesPageState extends State<FavoritesPage> {
     setState(() {
       currentIndex = index;
     });
-    // مثال:
-    // if (index == 0) {
-    //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomePage()));
-    // } else if (index == 1) { // طلباتي
-    //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const NewOrder())); // أو PresentOrder أو PastOrder
-    // } else if (index == 2) { // المفضلة
-    //   // لا شيء، لأن هذه الصفحة هي المفضلة
-    // } else if (index == 3) { // حسابي
-    //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const AccountPage()));
-    // }
+    // هنا تضيف التنقل بين الصفحات حسب رقم التاب:
+    if (index == 0) {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const ClientHomePage()));
+    } else if (index == 1) {
+      // هذه الصفحة حالياً "طلباتي"، ممكن توجه لصفحة NewOrder أو PresentOrder أو PastOrder
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const PresentOrder()));
+    } else if (index == 2) {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const FavoritesPage()));
+    } else if (index == 3) {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const AccountPage()));
+    }
   }
 
   @override
@@ -186,4 +185,5 @@ class _FavoritesPageState extends State<FavoritesPage> {
                             //   MaterialPageRoute(builder: (context) => NotificationsPage()),
                             // );
                           },
+
  */
