@@ -1,140 +1,171 @@
 import 'package:flutter/material.dart';
-import 'ClientHomeScreen.dart';
-import 'PresentOrder.dart';
-import 'FavoritesPage.dart';
-import 'AccountPage.dart';
+import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class AddFavorate extends StatefulWidget {
-  const AddFavorate({super.key});
+class AddFavorite extends StatefulWidget {
+  const AddFavorite({super.key});
 
   @override
-  State<AddFavorate> createState() => _AddFavorateState();
+  State<AddFavorite> createState() => _AddFavoriteState();
 }
 
-class _AddFavorateState extends State<AddFavorate> {
-  final Color greenColor = const Color(0xFF048372);
-  final Color grayColor = const Color(0xFFF6F6F6);
-  int currentIndex = 2; //  لأننا في "المفضلة"
+class _AddFavoriteState extends State<AddFavorite> {
+  final TextEditingController destinationController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
+  bool _isLoading = false;
 
-  void onBottomNavItemTapped(int index) {
+  Future<void> _addFavorite() async {
     setState(() {
-      currentIndex = index;
+      _isLoading = true;
     });
-    // مثال:
-    // هنا تضيف التنقل بين الصفحات حسب رقم التاب:
-    if (index == 0) {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const ClientHomePage()));
-    } else if (index == 1) {
-      // هذه الصفحة حالياً "طلباتي"، ممكن توجه لصفحة NewOrder أو PresentOrder أو PastOrder
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const PresentOrder()));
-    } else if (index == 2) {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const FavoritesPage()));
-    } else if (index == 3) {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const AccountPage()));
+    final dio = Dio();
+    const String apiUrl = 'http://192.168.0.128:8000/api/favorite-destinations';
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token'); // ✅ هذا هو الاسم الصحيح اللي خزّنتيه من صفحة التحقق
+      if (token == null || token.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('يجب تسجيل الدخول أولاً')),
+          );
+        }
+        setState(() {
+          _isLoading = false;
+        });
+        return;
+      }
+      final response = await dio.post(
+        apiUrl,
+        data: {
+          'destination': destinationController.text,
+          'address': addressController.text,
+        },
+        options: Options(
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+      if (mounted) {
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('تمت إضافة الوجهة المفضلة بنجاح!')),
+          );
+          // 💡 هذا السطر هو اللي يرجع البيانات المضافة للصفحة السابقة
+          Navigator.pop(context, {
+            'destination': destinationController.text,
+            'address': addressController.text,
+            // يمكنك إضافة أي حقول أخرى يرجعها الخادم هنا
+          });
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('فشل في الإضافة: ${response.statusCode}')),
+          );
+        }
+      }
+    } on DioException catch (e) {
+      if (mounted) {
+        String errorMessage = 'خطأ أثناء الإضافة: ';
+        if (e.response != null) {
+          errorMessage += 'الخادم استجاب بحالة ${e.response?.statusCode}. البيانات: ${e.response?.data}';
+        } else {
+          errorMessage += e.message ?? 'خطأ غير معروف';
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(errorMessage)),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('خطأ غير متوقع: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
-
+  @override
+  void dispose() {
+    destinationController.dispose();
+    addressController.dispose();
+    super.dispose();
+  }
   @override
   Widget build(BuildContext context) {
+    final Color greenColor = const Color(0xFF048372);
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: grayColor,
-
-        /// ✅ AppBar الجديد
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          title: const Text(
+            "إضافة وجهة مفضلة",
+            style: TextStyle(color: Colors.black),
+          ),
           centerTitle: true,
-          title: Text(
-            'المفضلة',
-            style: TextStyle(
-              color: greenColor,
-              fontFamily: 'Almarai',
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          backgroundColor: Colors.white,
           leading: IconButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
             icon: Icon(Icons.arrow_back_ios, color: greenColor),
+            onPressed: () {
+              Navigator.pop(context,true);
+            },
           ),
         ),
-//nav bar///////////////////////////////////////////////////////////////////////////
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: currentIndex,
-          onTap: onBottomNavItemTapped,
-          selectedItemColor: greenColor,
-          unselectedItemColor: Colors.grey,
-          type: BottomNavigationBarType.fixed,
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'الرئيسية'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.inventory_2_outlined), label: 'طلباتي'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.favorite_border), label: 'المفضلة'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.person_outline), label: 'حسابي'),
-          ],
-        ),
-///////////////////////////////////////////////////////////////////////////////////////
-
         body: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
-                'إضافة جهة مفضلة',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
               TextField(
-                textAlign: TextAlign.right,
+                controller: destinationController,
                 decoration: InputDecoration(
-                  hintText: 'العنوان',
-                  prefixIcon: Icon(Icons.location_on, color: greenColor),
+                  labelText: 'الوجهة',
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: greenColor),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide(color: greenColor, width: 2),
                   ),
-                  fillColor: Colors.white,
-                  filled: true,
                 ),
+                textAlign: TextAlign.right,
               ),
-              const SizedBox(height: 20),
-              Container(
-                height: 200,
-                decoration: BoxDecoration(
-                  border: Border.all(color: greenColor),
-                  borderRadius: BorderRadius.circular(12),
-                  color: Colors.white,
+              const SizedBox(height: 16),
+              TextField(
+                controller: addressController,
+                decoration: InputDecoration(
+                  labelText: 'العنوان',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: greenColor, width: 2),
+                  ),
                 ),
-                child: const Center(
-                  child: Text('خريطة توضيحية',
-                      style: TextStyle(color: Colors.grey)),
-                ),
+                textAlign: TextAlign.right,
               ),
-              const SizedBox(height: 20),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: greenColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: _isLoading ? null : _addFavorite,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: greenColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    child: Text('إضافة', style: TextStyle(color: Colors.white)),
-                  ),
+                ),
+                child: _isLoading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text(
+                  'إضافة',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ),
             ],

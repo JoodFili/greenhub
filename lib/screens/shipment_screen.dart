@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 import 'location_screen.dart';
 import 'NewOrder.dart';
 import 'FavoritesPage.dart';
 import 'AccountPage.dart';
+import 'dart:developer';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 class shipment_screen extends StatefulWidget {
   @override
@@ -18,6 +22,11 @@ class _ShipmentScreenState extends State<shipment_screen> {
   DateTime? selectedDate;
   TimeOfDay? selectedTime;
   int _selectedIndex = 0;
+
+
+  final TextEditingController weightController = TextEditingController();
+  final TextEditingController typeController = TextEditingController();
+  final TextEditingController sizeController = TextEditingController();
 
   Future<void> _selectDateTime() async {
     final DateTime? pickedDate = await showDatePicker(
@@ -53,7 +62,6 @@ class _ShipmentScreenState extends State<shipment_screen> {
                 onPrimary: Colors.white,
                 onSurface: Colors.black,
               ),
-
               timePickerTheme: TimePickerThemeData(
                 dayPeriodColor: newAmpmColor,
                 dayPeriodTextColor: Colors.white,
@@ -87,10 +95,8 @@ class _ShipmentScreenState extends State<shipment_screen> {
       _selectedIndex = index;
     });
 
-
     switch (index) {
       case 0:
-
         break;
       case 1:
         Navigator.pushReplacement(
@@ -112,6 +118,9 @@ class _ShipmentScreenState extends State<shipment_screen> {
         break;
     }
   }
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -152,40 +161,36 @@ class _ShipmentScreenState extends State<shipment_screen> {
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-
               Container(
                 width: double.infinity,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    buildLabeledTextField("الوزن", "٢٠ كغ"),
+                    buildLabeledTextField("الوزن", "أدخل الوزن", weightController),
                   ],
                 ),
               ),
               SizedBox(height: 16),
-
               Container(
                 width: double.infinity,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    buildLabeledTextField("النوع", "أثاث"),
+                    buildLabeledTextField("النوع", "أدخل النوع", typeController),
                   ],
                 ),
               ),
               SizedBox(height: 16),
-
               Container(
                 width: double.infinity,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    buildLabeledTextField("الحجم", "كبير"),
+                    buildLabeledTextField("الحجم", "أدخل الحجم", sizeController),
                   ],
                 ),
               ),
               SizedBox(height: 16),
-
               Container(
                 width: double.infinity,
                 child: Column(
@@ -196,15 +201,14 @@ class _ShipmentScreenState extends State<shipment_screen> {
                       child: Text(
                         "نوع الخدمة",
                         style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                            fontFamily: 'Almarai'
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          fontFamily: 'Almarai',
                         ),
                         textAlign: TextAlign.right,
                       ),
                     ),
                     SizedBox(height: 10),
-
                     Align(
                       alignment: Alignment.centerRight,
                       child: Row(
@@ -220,7 +224,6 @@ class _ShipmentScreenState extends State<shipment_screen> {
                   ],
                 ),
               ),
-
               if (serviceType == 'مجدول' && selectedDate != null && selectedTime != null)
                 Container(
                   width: double.infinity,
@@ -249,17 +252,17 @@ class _ShipmentScreenState extends State<shipment_screen> {
                   ),
                 ),
               const Spacer(),
-
               Container(
                 width: double.infinity,
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => LocationScreen()),
-                      );
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (ctx){
+                            return  LocationScreen(size: sizeController.text, type:typeController.text, weight: weightController.text, isImmediate: false,);
+                          }));
+                      //    sendShipmentData();
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: customGreen,
@@ -272,10 +275,8 @@ class _ShipmentScreenState extends State<shipment_screen> {
                       mainAxisSize: MainAxisSize.min,
                       textDirection: TextDirection.ltr,
                       children: const [
-
                         Icon(Icons.arrow_forward, color: Colors.white),
                         SizedBox(width: 8),
-
                         Text(
                           'التالي',
                           style: TextStyle(
@@ -296,7 +297,7 @@ class _ShipmentScreenState extends State<shipment_screen> {
     );
   }
 
-  Widget buildLabeledTextField(String label, String hint) {
+  Widget buildLabeledTextField(String label, String hint, TextEditingController controller) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
@@ -317,6 +318,7 @@ class _ShipmentScreenState extends State<shipment_screen> {
         ),
         SizedBox(height: 8),
         TextField(
+          controller: controller,
           textAlign: TextAlign.right,
           textDirection: TextDirection.rtl,
           decoration: InputDecoration(
@@ -344,13 +346,17 @@ class _ShipmentScreenState extends State<shipment_screen> {
       mainAxisSize: MainAxisSize.min,
       textDirection: TextDirection.rtl,
       children: [
-        Radio(
+        Radio<String>(
           value: value,
           groupValue: serviceType,
           onChanged: (val) {
             setState(() {
               serviceType = val!;
               if (val == 'مجدول') _selectDateTime();
+              else {
+                selectedDate = null;
+                selectedTime = null;
+              }
             });
           },
           activeColor: customGreen,

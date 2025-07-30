@@ -45,7 +45,7 @@ class _ClientVerificationPageState extends State<ClientVerificationPage> {
 
     try {
       final response = await dio.post(
-        'http://10.0.2.2:8000/api/send-code',
+        'http://192.168.0.128:8000/api/send-code',
         data: {
           'phone_number': fullNumber,
           'user_type': widget.userType,

@@ -1,24 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'vehicle_screen.dart';
-import 'shipment_screen.dart';
+import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'NewOrder.dart';
 import 'FavoritesPage.dart';
 import 'AccountPage.dart';
+import 'shipment_screen.dart';
+import 'request_submitted_screen.dart';
 
 
 class LocationScreen extends StatefulWidget {
-  const LocationScreen({super.key});
+  final String weight;
+  final String type;
+  final String size;
+  final bool isImmediate;
+
+  const LocationScreen({
+    super.key,
+    required this.size,
+    required this.type,
+    required this.weight,
+    required this.isImmediate,
+  });
 
   @override
   State<LocationScreen> createState() => _LocationScreenState();
 }
 
 class _LocationScreenState extends State<LocationScreen> {
+  final TextEditingController addressController = TextEditingController();
+  final TextEditingController destinationController = TextEditingController();
+
   final Color customGreen = const Color(0xFF048372);
   final Color backgroundGray = const Color(0xFFF2F2F2);
   late GoogleMapController _mapController;
-  bool addToFavorites = false;
   static const LatLng _initialPosition = LatLng(21.4858, 39.1925);
   int _selectedIndex = 0;
 
@@ -27,12 +42,8 @@ class _LocationScreenState extends State<LocationScreen> {
       _selectedIndex = index;
     });
 
-
     switch (index) {
       case 0:
-
-
-
         break;
       case 1:
         Navigator.pushReplacement(
@@ -54,6 +65,75 @@ class _LocationScreenState extends State<LocationScreen> {
         break;
     }
   }
+
+  Future<void> sendShipmentData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+    final clientId = prefs.getInt('client_id');
+
+    print("🚨 Token from prefs: $token");
+    print("🚨 Client ID from prefs: $clientId");
+
+    if (token == null || clientId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('يرجى تسجيل الدخول مرة أخرى')),
+      );
+      return;
+    }
+
+    final formData = FormData.fromMap({
+      'Client_id': clientId,
+      'type': widget.type,
+      'weight': widget.weight,
+      'size': widget.size,
+      'destination': destinationController.text,
+      'address': addressController.text,
+      'is_immediate': widget.isImmediate ? 1 : 0,
+      'status': 'pending',
+      'payment_method': 'unknown',
+    });
+
+    try {
+      final response = await Dio().post(
+        'http://192.168.0.128:8000/api/shipments',
+        data: formData,
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Accept': 'application/json',
+          },
+        ),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('✅ تم إرسال الشحنة بنجاح!')),
+        );
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => RequestSubmittedScreen()),
+        );
+      } else {
+        print('❌ Error Response: ${response.data}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('❌ فشل في الإرسال، حاول مرة أخرى')),
+        );
+      }
+    } catch (e) {
+      if (e is DioException && e.response != null) {
+        print('❌ DioException: ${e.response?.data}');
+      } else {
+        print('❌ Unknown Error: $e');
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('⚠️ حدث خطأ أثناء الإرسال')),
+      );
+    }
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -97,59 +177,10 @@ class _LocationScreenState extends State<LocationScreen> {
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-
-              Container(
-                width: double.infinity,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    buildLabeledTextField("نقطة الانطلاق", "مكة"),
-                  ],
-                ),
-              ),
+              buildLabeledTextField("نقطة الانطلاق", "مكة", addressController),
               SizedBox(height: 16),
-
-              Container(
-                width: double.infinity,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    buildLabeledTextField("الوجهة", "جدة"),
-                  ],
-                ),
-              ),
+              buildLabeledTextField("الوجهة", "جدة", destinationController),
               SizedBox(height: 16),
-
-              Container(
-                width: double.infinity,
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    mainAxisSize: MainAxisSize.min,
-                    textDirection: TextDirection.rtl,
-                    children: [
-                      Radio(
-                        value: true,
-                        groupValue: addToFavorites,
-                        onChanged: (val) {
-                          setState(() {
-                            addToFavorites = val ?? false;
-                          });
-                        },
-                        activeColor: customGreen,
-                      ),
-                      SizedBox(width: 4),
-                      Text(
-                        'إضافة الموقع إلى الجهات المفضلة',
-                        style: TextStyle(fontSize: 16, fontFamily: 'Almarai'),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(height: 16),
-
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
@@ -174,51 +205,40 @@ class _LocationScreenState extends State<LocationScreen> {
                 ),
               ),
               SizedBox(height: 16),
-
-              Container(
-                width: double.infinity,
-                child: Text(
-                  'السعودية، جدة، حي الفيصلية',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16, fontFamily: 'Almarai', color: Colors.grey),
-                ),
+              Text(
+                'السعودية، جدة، حي الفيصلية',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16, fontFamily: 'Almarai', color: Colors.grey),
               ),
               SizedBox(height: 16),
-
-              Container(
-                width: double.infinity,
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => VehicleSelectionScreen()),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: customGreen,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    await sendShipmentData();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: customGreen,
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      textDirection: TextDirection.ltr,
-                      children: const [
-                        Icon(Icons.arrow_forward, color: Colors.white),
-                        SizedBox(width: 8),
-                        Text(
-                          'التالي',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontFamily: 'Almarai',
-                            fontSize: 16,
-                          ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    textDirection: TextDirection.ltr,
+                    children: const [
+                      Icon(Icons.arrow_forward, color: Colors.white),
+                      SizedBox(width: 8),
+                      Text(
+                        'التالي',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontFamily: 'Almarai',
+                          fontSize: 16,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -229,27 +249,25 @@ class _LocationScreenState extends State<LocationScreen> {
     );
   }
 
-  Widget buildLabeledTextField(String label, String hint) {
+  Widget buildLabeledTextField(String label, String hint, TextEditingController controller) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        Container(
-          width: double.infinity,
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: Text(
-              label,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-                fontFamily: 'Almarai',
-              ),
-              textAlign: TextAlign.right,
+        Align(
+          alignment: Alignment.centerRight,
+          child: Text(
+            label,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+              fontFamily: 'Almarai',
             ),
+            textAlign: TextAlign.right,
           ),
         ),
         SizedBox(height: 8),
         TextField(
+          controller: controller,
           textAlign: TextAlign.right,
           textDirection: TextDirection.rtl,
           decoration: InputDecoration(
@@ -272,7 +290,3 @@ class _LocationScreenState extends State<LocationScreen> {
     );
   }
 }
-
-
-
-

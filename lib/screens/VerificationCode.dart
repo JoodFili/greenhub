@@ -24,12 +24,15 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
   String verificationCode = "";
   bool isLoading = false;
   final dio = Dio();
-  final String apiBaseUrl = "http://10.0.2.2:8000/api";
+  final String apiBaseUrl = "http://192.168.0.128:8000/api";
 
-  Future<void> saveToken(String token) async {
+  Future<void> saveTokenAndClient(String token, int? clientId) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('auth_token', token);
     await prefs.setString('user_type', widget.userType);
+    if (clientId != null) {
+      await prefs.setInt('client_id', clientId);
+    }
   }
 
   void _submitCode() async {
@@ -50,26 +53,37 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
         options: Options(contentType: Headers.formUrlEncodedContentType),
       );
 
+      print("📩 رد السيرفر الكامل: ${response.data}");
+
       if (response.data['status'] == true) {
         final token = response.data['token'];
-        if (token != null) await saveToken(token);
+        final clientId = response.data['client_id'];
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => widget.userType == 'client'
-                ? const ClientHomePage()
-                : const DriverHomeScreen(),
-          ),
-        );
+        if (token != null) {
+          await saveTokenAndClient(token, clientId);
+
+          if (clientId == null) {
+            print("⚠️ تنبيه: السيرفر لم يُرجع client_id!");
+          }
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => widget.userType == 'client'
+                  ? const ClientHomePage()
+                  : const DriverHomeScreen(),
+            ),
+          );
+        } else {
+          _showMessage("لم يتم استقبال رمز التوثيق من السيرفر", isError: true);
+        }
       } else {
-        _showMessage(response.data['message'] ?? 'رمز التحقق غير صحيح',
-            isError: true);
+        _showMessage(response.data['message'] ?? 'رمز التحقق غير صحيح', isError: true);
       }
     } catch (e) {
-      _showMessage("حدث خطأ أثناء التحقق. تأكد من الاتصال بالسيرفر.",
-          isError: true);
+      _showMessage("حدث خطأ أثناء التحقق. تأكد من الاتصال بالسيرفر.", isError: true);
     }
+
     setState(() => isLoading = false);
   }
 
@@ -92,8 +106,9 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
   void _showMessage(String message, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-          content: Text(message),
-          backgroundColor: isError ? Colors.red : Colors.green),
+        content: Text(message),
+        backgroundColor: isError ? Colors.red : Colors.green,
+      ),
     );
   }
 
@@ -138,7 +153,7 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
                     const SizedBox(height: 20),
                     Text('تم إرسال الرمز على الرقم: ${widget.phoneNumber}',
                         style:
-                            const TextStyle(fontSize: 16, color: Colors.grey),
+                        const TextStyle(fontSize: 16, color: Colors.grey),
                         textAlign: TextAlign.center),
                     const SizedBox(height: 20),
                     PinCodeTextField(
@@ -173,13 +188,13 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
                               borderRadius: BorderRadius.circular(10))),
                       child: isLoading
                           ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                  color: Colors.white, strokeWidth: 2))
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 2))
                           : const Text('تحقق',
-                              style:
-                                  TextStyle(fontSize: 16, color: Colors.white)),
+                          style:
+                          TextStyle(fontSize: 16, color: Colors.white)),
                     ),
                   ],
                 ),
