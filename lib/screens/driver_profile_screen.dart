@@ -43,6 +43,8 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token');
 
+    _token = token;
+
     _nameController.text = prefs.getString('name') ?? '';
     _emailController.text = prefs.getString('email') ?? '';
     _idController.text = prefs.getString('national_ID') ?? '';
@@ -125,7 +127,7 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
 
     try {
       final response = await Dio().post(
-        "http://192.168.1.85:8000/api/profile",
+        "http://192.168.0.128:8000/api/profile",
         data: formData,
         options: Options(
           headers: {

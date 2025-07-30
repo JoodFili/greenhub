@@ -100,7 +100,7 @@ class _AccountPageState extends State<AccountPage> {
 
     try {
       final response = await Dio().post(
-        "http://192.168.1.85:8000/api/profile",
+        "http://192.168.0.128:8000/api/profile",
         data: formData,
         options: Options(
           headers: {
