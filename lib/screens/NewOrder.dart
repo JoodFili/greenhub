@@ -8,7 +8,7 @@ import 'Details.dart';
 import 'ClientHomeScreen.dart';
 import 'AccountPage.dart';
 import 'FavoritesPage.dart';
-
+import 'driver_confirmation.dart';
 class NewOrder extends StatefulWidget {
   const NewOrder({super.key});
 
@@ -132,9 +132,17 @@ class _NewOrderState extends State<NewOrder> {
                 ),
               ),
               onPressed: () {
-                log('تم اختيار السائق: ${driver?['phone']}, بسعر ${offer['price']}');
-                // تقدر هنا ترسل الطلب للسيرفر أو تخزن الاختيار
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DriverConfirmationPage(
+                      driver: driver,
+                      price: offer['price'].toString(),
+                    ),
+                  ),
+                );
               },
+
               child: const Text(
                 'اختيار السائق',
                 style: TextStyle(
@@ -287,3 +295,5 @@ class _NewOrderState extends State<NewOrder> {
     );
   }
 }
+
+
