@@ -1,11 +1,13 @@
+import 'dart:developer';
+import '../utiles/constant_variable.dart' as globals;
 import 'package:flutter/material.dart';
-import 'dart:math';
+import 'package:dio/dio.dart';
 import 'PresentOrder.dart';
 import 'PastOrder.dart';
 import 'Details.dart';
-import 'ClientHomeScreen.dart';  // تأكد من استيراد الصفحة الرئيسية الصحيحة
+import 'ClientHomeScreen.dart';
 import 'AccountPage.dart';
-import 'FavoritesPage.dart';    // أو اسم صفحة المفضلة عندك
+import 'FavoritesPage.dart';
 
 class NewOrder extends StatefulWidget {
   const NewOrder({super.key});
@@ -19,29 +21,50 @@ class _NewOrderState extends State<NewOrder> {
   final Color grayColor = const Color(0xFFF6F6F6);
   final Color whiteColor = Colors.white;
   final Color lightGreen = const Color(0xFFAECF5C);
-  int currentIndex = 1; // 1 لأن هذه صفحة طلباتي الجديدة حسب ترتيبك
 
-  void navigateToTab(String label) {
-    if (label == 'الجديدة') {
-      // لا شيء لأنها الصفحة الحالية
-    } else if (label == 'الحالية') {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const PresentOrder()),
+  int currentIndex = 1;
+  List<Map<String, dynamic>> shipments = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchShipments();
+  }
+
+  Future<void> fetchShipments() async {
+    log('//////////////${globals.authToken}');
+    try {
+      final response = await Dio().get(
+        'http://10.0.2.2:8000/api/pending-shipments',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer ${globals.authToken}',
+            'Accept': 'application/json',
+          },
+        ),
       );
-    } else if (label == 'السابقة') {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const PastOrder()),
-      );
+
+      setState(() {
+        shipments = List<Map<String, dynamic>>.from(response.data);
+        isLoading = false;
+        log("........................${shipments.toString()}");
+      });
+    } catch (e) {
+      print("Error fetching shipments: $e");
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
-  void navigateToDetailsPage() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const Details()),
-    );
+
+  void navigateToTab(String label) {
+    if (label == 'الحالية') {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const PresentOrder()));
+    } else if (label == 'السابقة') {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const PastOrder()));
+    }
   }
 
   void onBottomNavItemTapped(int index) {
@@ -49,23 +72,82 @@ class _NewOrderState extends State<NewOrder> {
       currentIndex = index;
     });
     if (index == 0) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const ClientHomePage()),
-      );
-    } else if (index == 1) {
-      // هذه الصفحة هي "طلباتي" الجديدة - لا حاجة للتنقل
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const ClientHomePage()));
     } else if (index == 2) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const FavoritesPage()),
-      );
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const FavoritesPage()));
     } else if (index == 3) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const AccountPage()),
-      );
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const AccountPage()));
     }
+  }
+
+  Widget driverCard(Map<String, dynamic> offer, bool selected) {
+    final driver = offer['driver'];
+    String price = offer['price']?.toString() ?? 'لا يوجد عرض';
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: selected ? lightGreen : whiteColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Row(
+            children: [
+              const CircleAvatar(
+                radius: 20,
+                backgroundColor: Colors.green,
+                child: Icon(Icons.person, color: Colors.white),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  driver != null ? driver['phone'] ?? 'سائق' : 'سائق',
+                  style: const TextStyle(fontSize: 16),
+                ),
+              ),
+              Text(
+                '$price ر.س',
+                style: TextStyle(
+                  fontFamily: 'Almarai',
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: greenColor,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: greenColor,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onPressed: () {
+                log('تم اختيار السائق: ${driver?['phone']}, بسعر ${offer['price']}');
+                // تقدر هنا ترسل الطلب للسيرفر أو تخزن الاختيار
+              },
+              child: const Text(
+                'اختيار السائق',
+                style: TextStyle(
+                  fontFamily: 'Almarai',
+                  fontSize: 14,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          )
+        ],
+      ),
+    );
   }
 
   @override
@@ -87,9 +169,7 @@ class _NewOrderState extends State<NewOrder> {
             ),
           ),
           leading: IconButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
+            onPressed: () => Navigator.pop(context),
             icon: Icon(Icons.arrow_back_ios, color: greenColor),
           ),
           bottom: PreferredSize(
@@ -100,10 +180,7 @@ class _NewOrderState extends State<NewOrder> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  GestureDetector(
-                    onTap: () => navigateToTab('الجديدة'),
-                    child: tabItem('الجديدة', true, greenColor),
-                  ),
+                  tabItem('الجديدة', true, greenColor),
                   GestureDetector(
                     onTap: () => navigateToTab('الحالية'),
                     child: tabItem('الحالية', false),
@@ -117,99 +194,57 @@ class _NewOrderState extends State<NewOrder> {
             ),
           ),
         ),
-        body: SafeArea(
-          child: Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 16),
-                      Container(
-                        padding: const EdgeInsets.all(30),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: greenColor, width: 2),
-                          borderRadius: BorderRadius.circular(16),
-                          color: whiteColor,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Align(
-                              alignment: Alignment.topLeft,
-                              child: GestureDetector(
-                                onTap: navigateToDetailsPage,
-                                child: Icon(
-                                  Icons.arrow_forward_ios,
-                                  color: greenColor,
-                                ),
-                              ),
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    Text(
-                                      '#83820',
-                                      style: TextStyle(
-                                        color: greenColor,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    const Text(
-                                      '2025-02-22 4:22 pm',
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Icon(Icons.delete_outline, color: greenColor)
-                                  ],
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              'قيد الانتظار',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: greenColor,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      driverCard('احمد محمد', selected: false),
-                      driverCard('احمد محمد', selected: true),
-                      driverCard('احمد محمد', selected: false),
-                      const SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: greenColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 32, vertical: 12),
-                          elevation: 2,
-                        ),
-                        child: const Text(
-                          'اختيار السائق',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 32),
-                    ],
-                  ),
+        body: isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : SafeArea(
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: shipments.length,
+            itemBuilder: (context, index) {
+              final shipment = shipments[index];
+              final offers = shipment['offers'] as List<dynamic>;
+              bool hasOffers = offers.isNotEmpty;
+
+              return Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: whiteColor,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: greenColor, width: 2),
                 ),
-              ),
-            ],
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      'رقم الشحنة: #${shipment['id']}',
+                      style: TextStyle(
+                        color: greenColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'الحالة: ${shipment['details']['status']}',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: greenColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    if (hasOffers)
+                      ...offers.map((offer) => driverCard(offer, false)).toList()
+                    else
+                      const Text(
+                        'لا يوجد عروض بعد',
+                        style: TextStyle(color: Colors.grey, fontSize: 14),
+                      ),
+                  ],
+                ),
+              );
+            },
           ),
         ),
         bottomNavigationBar: BottomNavigationBar(
@@ -220,12 +255,9 @@ class _NewOrderState extends State<NewOrder> {
           type: BottomNavigationBarType.fixed,
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: 'الرئيسية'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.inventory_2_outlined), label: 'طلباتي'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.favorite_border), label: 'المفضلة'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.person_outline), label: 'حسابي'),
+            BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), label: 'طلباتي'),
+            BottomNavigationBarItem(icon: Icon(Icons.favorite_border), label: 'المفضلة'),
+            BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'حسابي'),
           ],
         ),
       ),
@@ -252,65 +284,6 @@ class _NewOrderState extends State<NewOrder> {
             color: selectedColor ?? Colors.black,
           )
       ],
-    );
-  }
-
-  Widget driverCard(String name, {bool selected = false}) {
-    List<Widget> starWidgets = [];
-    double rating = 4.5;
-    int fullStars = rating.floor();
-    bool hasHalfStar = (rating - fullStars) >= 0.5;
-
-    for (int i = 0; i < 5; i++) {
-      if (i < fullStars) {
-        starWidgets.add(Icon(Icons.star, color: Colors.orange, size: 18));
-      } else if (i == fullStars && hasHalfStar) {
-        starWidgets.add(Icon(Icons.star_half, color: Colors.orange, size: 18));
-      } else {
-        starWidgets.add(Icon(Icons.star_border, color: Colors.orange, size: 18));
-      }
-    }
-
-    Random random = Random();
-    int price = random.nextInt(151) + 50;
-
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: selected ? lightGreen : whiteColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Row(
-        children: [
-          const CircleAvatar(
-            radius: 20,
-            backgroundColor: Colors.green,
-            child: Icon(Icons.person, color: Colors.white),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              name,
-              style: const TextStyle(
-                fontSize: 16,
-              ),
-            ),
-          ),
-          Row(children: starWidgets),
-          const SizedBox(width: 8),
-          Text(
-            '$price ر.س',
-            style: TextStyle(
-              fontFamily: 'Almarai',
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: greenColor,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

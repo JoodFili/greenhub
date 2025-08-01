@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:greenhub/screens/PageView.dart';
+import '../utiles/constant_variable.dart';
 import 'FavoritesPage.dart';
 import 'shipment_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -19,7 +20,11 @@ class ClientHomePage extends StatefulWidget {
 class _ClientHomePageState extends State<ClientHomePage> {
   int currentIndex = 0; // عوضًا عن _selectedIndex
   final Color greenColor = const Color(0xFF048372);
-
+@override
+  void initState() {
+    log('//////////////${authToken.toString()}');
+    super.initState();
+  }
   void onBottomNavItemTapped(int index) {
     setState(() {
       currentIndex = index;
@@ -47,6 +52,14 @@ class _ClientHomePageState extends State<ClientHomePage> {
       );
     }
   }
+
+  /*@override
+  void initState() {
+    log('/////////////$authToken');
+
+   // print("🚨 Token from prefs: $token");
+    super.initState();
+  } */
 
   @override
   Widget build(BuildContext context) {

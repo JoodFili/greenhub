@@ -1,11 +1,13 @@
+import 'dart:developer';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'NewOrder.dart';
 import 'PastOrder.dart';
 import 'Details.dart';
 import 'ClientHomeScreen.dart';
 import 'AccountPage.dart';
-import 'FavoritesPage.dart'; // استيراد صفحة المفضلة
-import 'AddFavorate.dart';
+import 'FavoritesPage.dart';
+import '../utiles/constant_variable.dart' as globals;
 
 class PresentOrder extends StatefulWidget {
   const PresentOrder({super.key});
@@ -16,40 +18,63 @@ class PresentOrder extends StatefulWidget {
 
 class _PresentOrderState extends State<PresentOrder> {
   final Color greenColor = const Color(0xFF048372);
-  final Color lightgreen = const Color(0xFFAECF5C);
+  final Color lightGreen = const Color(0x80AECF5C);
   final Color grayColor = const Color(0xFFF6F6F6);
-  final Color yellowColor = const Color(0xFFFFD600); // أصفر للمجدول
-  int currentIndex = 1; // 1 = طلباتي
+  int currentIndex = 2; // تأكد من أن هذا المؤشر يتوافق مع العنصر الصحيح في BottomNavigationBar
+
+  List<Map<String, dynamic>> shipments = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchShipments();
+  }
+
+  Future<void> fetchShipments() async {
+    log('📦 التوكن: ${globals.authToken}');
+    try {
+      final response = await Dio().get(
+        'http://10.0.2.2:8000/api/present-shipments',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer ${globals.authToken}',
+            'Accept': 'application/json',
+          },
+        ),
+      );
+      setState(() {
+        shipments = List<Map<String, dynamic>>.from(response.data);
+        isLoading = false;
+      });
+      log("✅ البيانات: ${shipments.toString()}");
+    } catch (e) {
+      print("❌ فشل في جلب الشحنات: $e");
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
 
   void onBottomNavItemTapped(int index) {
     setState(() {
       currentIndex = index;
     });
-
     if (index == 0) {
       Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-              builder: (context) => const ClientHomePage()));
+          context, MaterialPageRoute(builder: (context) => const ClientHomePage()));
     } else if (index == 1) {
       Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-              builder: (context) => const NewOrder()));
+          context, MaterialPageRoute(builder: (context) => const NewOrder()));
     } else if (index == 2) {
-      Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-              builder: (context) => const FavoritesPage())); // هنا فتح صفحة المفضلة
+      // هذا هو العنصر الحالي، لا تفعل شيئًا أو أعد تحميل الصفحة إذا لزم الأمر
+      // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const PresentOrder()));
     } else if (index == 3) {
       Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-              builder: (context) => const AccountPage()));
+          context, MaterialPageRoute(builder: (context) => const AccountPage()));
     }
   }
 
-  //  دالة التنقل بين التابات في AppBar
   void navigateToTab(String label) {
     if (label == 'الجديدة') {
       Navigator.pushReplacement(
@@ -57,21 +82,13 @@ class _PresentOrderState extends State<PresentOrder> {
         MaterialPageRoute(builder: (context) => const NewOrder()),
       );
     } else if (label == 'الحالية') {
-      // لا شيء لأنها الصفحة الحالية
+      // الحالية (نفس الصفحة)
     } else if (label == 'السابقة') {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const PastOrder()),
       );
     }
-  }
-
-  // دالة للانتقال إلى صفحة التفاصيل
-  void navigateToDetailsPage() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const Details()),
-    );
   }
 
   @override
@@ -93,9 +110,7 @@ class _PresentOrderState extends State<PresentOrder> {
             ),
           ),
           leading: IconButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
+            onPressed: () => Navigator.pop(context),
             icon: Icon(Icons.arrow_back_ios, color: greenColor),
           ),
           bottom: PreferredSize(
@@ -123,259 +138,107 @@ class _PresentOrderState extends State<PresentOrder> {
             ),
           ),
         ),
-        body: SafeArea(
+        body: isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : shipments.isEmpty
+            ? const Center(child: Text('لا توجد شحنات حالياً'))
+            : SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
             children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 16),
-                      // كرت 1
-                      Container(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        padding: const EdgeInsets.all(30),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: lightgreen, width: 2),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Align(
-                              alignment: Alignment.topLeft,
-                              child: GestureDetector(
-                                onTap: navigateToDetailsPage,
-                                child: Icon(
-                                  Icons.arrow_forward_ios,
-                                  color: lightgreen,
-                                ),
-                              ),
+              const SizedBox(height: 16),
+              ...shipments.map((shipment) {
+                // التحقق من وجود 'details' و 'is_immediate'
+                final bool isScheduled = shipment['details'] != null &&
+                    shipment['details']['is_immediate'] == 0;
+
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Details(shipment: shipment),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(30),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: greenColor,
+                        width: 2,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // إضافة مربع "مجدول" هنا
+                        if (isScheduled)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.yellow, // خلفية صفراء
+                              borderRadius: BorderRadius.circular(4),
                             ),
-                            Text(
-                              'قيد التنفيذ',
+                            child: Text(
+                              'مجدول',
                               style: TextStyle(
+                                color: greenColor, // نص أخضر
                                 fontFamily: 'Almarai',
-                                color: lightgreen,
-                                fontSize: 16,
+                                fontSize: 12,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text(
-                                  '#83821',
-                                  style: TextStyle(
-                                    fontFamily: 'Almarai',
-                                    color: Colors.black,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                Container(
-                                  alignment: Alignment.topRight,
-                                  padding: const EdgeInsets.only(top: 8, right: 12),
-                                  child: const Text(
-                                    '2025-02-22 4:22 pm',
-                                    style: TextStyle(
-                                      fontFamily: 'Almarai',
-                                      color: Colors.black,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                          ),
+                        if (isScheduled)
+                          const SizedBox(height: 8), // مسافة بعد المربع إذا كان موجودًا
+
+                        Align(
+                          alignment: Alignment.topLeft,
+                          child: Icon(
+                            Icons.arrow_forward_ios,
+                            color: greenColor,
+                          ),
                         ),
-                      ),
-                      // كرت 2
-                      Container(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        padding: const EdgeInsets.all(30),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: lightgreen, width: 2),
+                        const SizedBox(height: 8),
+                        Text(
+                          shipment['status'] ?? 'قيد التنفيذ',
+                          style: TextStyle(
+                            fontFamily: 'Almarai',
+                            color: greenColor,
+                            fontSize: 16,
+                          ),
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Align(
-                              alignment: Alignment.topLeft,
-                              child: GestureDetector(
-                                onTap: navigateToDetailsPage,
-                                child: Icon(
-                                  Icons.arrow_forward_ios,
-                                  color: lightgreen,
-                                ),
+                            Text(
+                              '#${shipment['id'] ?? ''}',
+                              style: TextStyle(
+                                fontFamily: 'Almarai',
+                                color: greenColor,
+                                fontSize: 14,
                               ),
                             ),
                             Text(
-                              'قيد التنفيذ',
+                              shipment['created_at'] ?? 'تاريخ غير متاح',
                               style: TextStyle(
                                 fontFamily: 'Almarai',
-                                color: lightgreen,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text(
-                                  '#83821',
-                                  style: TextStyle(
-                                    fontFamily: 'Almarai',
-                                    color: Colors.black,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                Container(
-                                  alignment: Alignment.topRight,
-                                  padding: const EdgeInsets.only(top: 8, right: 12),
-                                  child: const Text(
-                                    '2025-02-22 4:22 pm',
-                                    style: TextStyle(
-                                      fontFamily: 'Almarai',
-                                      color: Colors.black,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      // كرت 3
-                      Container(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        padding: const EdgeInsets.all(30),
-                        decoration: BoxDecoration(
-                          color: lightgreen,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Align(
-                              alignment: Alignment.topLeft,
-                              child: GestureDetector(
-                                onTap: navigateToDetailsPage,
-                                child: Icon(
-                                  Icons.arrow_forward_ios,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                              decoration: BoxDecoration(
                                 color: greenColor,
-                                borderRadius: BorderRadius.circular(12),
+                                fontSize: 14,
                               ),
-                              child: const Text(
-                                'مجدول',
-                                style: TextStyle(
-                                  fontFamily: 'Almarai',
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 3),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: const [
-                                Text(
-                                  '#83822',
-                                  style: TextStyle(
-                                    fontFamily: 'Almarai',
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                Text(
-                                  '2025-02-24 3:00 pm',
-                                  style: TextStyle(
-                                    fontFamily: 'Almarai',
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
                             ),
                           ],
                         ),
-                      ),
-                      // كرت 4
-                      Container(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        padding: const EdgeInsets.all(30),
-                        decoration: BoxDecoration(
-                          color: lightgreen,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Align(
-                              alignment: Alignment.topLeft,
-                              child: GestureDetector(
-                                onTap: navigateToDetailsPage,
-                                child: Icon(
-                                  Icons.arrow_forward_ios,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: greenColor,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Text(
-                                'مجدول',
-                                style: TextStyle(
-                                  fontFamily: 'Almarai',
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 3),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: const [
-                                Text(
-                                  '#83822',
-                                  style: TextStyle(
-                                    fontFamily: 'Almarai',
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                Text(
-                                  '2025-02-24 3:00 pm',
-                                  style: TextStyle(
-                                    fontFamily: 'Almarai',
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              )
+                );
+              }).toList(),
             ],
           ),
         ),
@@ -387,12 +250,9 @@ class _PresentOrderState extends State<PresentOrder> {
           type: BottomNavigationBarType.fixed,
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: 'الرئيسية'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.inventory_2_outlined), label: 'طلباتي'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.favorite_border), label: 'المفضلة'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.person_outline), label: 'حسابي'),
+            BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), label: 'طلباتي'),
+            BottomNavigationBarItem(icon: Icon(Icons.favorite_border), label: 'المفضلة'),
+            BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'حسابي'),
           ],
         ),
       ),

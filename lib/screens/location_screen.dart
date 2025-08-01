@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../utiles/base_url.dart';
 import 'NewOrder.dart';
 import 'FavoritesPage.dart';
 import 'AccountPage.dart';
@@ -95,8 +96,22 @@ class _LocationScreenState extends State<LocationScreen> {
 
     try {
       final response = await Dio().post(
-        'http://192.168.0.128:8000/api/shipments',
+        '${BaseUrl.baseUrl}/api/shipments',
         data: formData,
+        // data: {
+        //   "Client_id": 1,
+        //   "type":" انشاء العروض",
+        //   "weight": "4 كجم",
+        //   "size": "صغير",
+        //   "summary": "مغلف يحتوي على أوراق رسمية",
+        //   "destination": "جدة",
+        //   "address": "حي النسيم شارع 10",
+        //   "scheduled_date": "2025-07-10",
+        //   "scheduled_time": "14:00",
+        //   "status": "قيد الانتظار",
+        //   "is_immediate": true,
+        //   "payment_method": "مدى"
+        // },
         options: Options(
           headers: {
             'Authorization': 'Bearer $token',
@@ -215,6 +230,7 @@ class _LocationScreenState extends State<LocationScreen> {
                 alignment: Alignment.centerLeft,
                 child: ElevatedButton(
                   onPressed: () async {
+                   // Navigator.of(context).push(MaterialPageRoute(builder: (ctx)=>))
                     await sendShipmentData();
                   },
                   style: ElevatedButton.styleFrom(

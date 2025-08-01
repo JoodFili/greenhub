@@ -1,10 +1,18 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart'; // مهم جداً
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:greenhub/screens/ClientHomeScreen.dart';
 import 'package:greenhub/screens/PageView.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'utiles/constant_variable.dart' as globals;
 
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
-void main() {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  globals.authToken = prefs.getString('token'); // تحميل التوكن إلى المتغير العام
+log(globals.authToken.toString());
   runApp(MyApp());
 }
 
@@ -18,10 +26,10 @@ class MyApp extends StatelessWidget {
         primaryColor: Colors.green,
       ),
 
-      // ✅ الإعدادات الخاصة بالتعريب
+      // ✅ إعدادات التعريب
       locale: const Locale('ar'),
       supportedLocales: const [
-        Locale('ar'), // اللغة العربية فقط
+        Locale('ar'),
       ],
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
@@ -29,14 +37,7 @@ class MyApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
 
-      //home: shipment_screen(),
-      home: OnboardingPage(),
-    //  home: ClientHomePage(),
-
+      home: OnboardingPage(), // غيرها حسب ما يناسبك
     );
   }
 }
-
-
-
-

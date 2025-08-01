@@ -1,8 +1,10 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import '../utiles/constant_variable.dart';
 import 'ClientHomeScreen.dart';
 import 'driver_home_screen.dart';
 
@@ -24,7 +26,7 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
   String verificationCode = "";
   bool isLoading = false;
   final dio = Dio();
-  final String apiBaseUrl = "http://192.168.0.128:8000/api";
+  final String apiBaseUrl = "http://10.0.2.2:8000/api";
 
   Future<void> saveTokenAndClient(String token, int? clientId) async {
     final prefs = await SharedPreferences.getInstance();
@@ -36,6 +38,8 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
   }
 
   void _submitCode() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
     if (verificationCode.length != 6) {
       _showMessage("يرجى إدخال رمز التحقق كاملاً", isError: true);
       return;
@@ -58,7 +62,9 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
       if (response.data['status'] == true) {
         final token = response.data['token'];
         final clientId = response.data['client_id'];
-
+        authToken = prefs.setString('token', response.data['token']);
+        authToken = prefs.getString('token');
+        log('///User Token is : .....${authToken.toString()}');
         if (token != null) {
           await saveTokenAndClient(token, clientId);
 
@@ -78,10 +84,12 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
           _showMessage("لم يتم استقبال رمز التوثيق من السيرفر", isError: true);
         }
       } else {
-        _showMessage(response.data['message'] ?? 'رمز التحقق غير صحيح', isError: true);
+        _showMessage(response.data['message'] ?? 'رمز التحقق غير صحيح',
+            isError: true);
       }
     } catch (e) {
-      _showMessage("حدث خطأ أثناء التحقق. تأكد من الاتصال بالسيرفر.", isError: true);
+      _showMessage("حدث خطأ أثناء التحقق. تأكد من الاتصال بالسيرفر.",
+          isError: true);
     }
 
     setState(() => isLoading = false);
@@ -153,7 +161,7 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
                     const SizedBox(height: 20),
                     Text('تم إرسال الرمز على الرقم: ${widget.phoneNumber}',
                         style:
-                        const TextStyle(fontSize: 16, color: Colors.grey),
+                            const TextStyle(fontSize: 16, color: Colors.grey),
                         textAlign: TextAlign.center),
                     const SizedBox(height: 20),
                     PinCodeTextField(
@@ -188,13 +196,13 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
                               borderRadius: BorderRadius.circular(10))),
                       child: isLoading
                           ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                              color: Colors.white, strokeWidth: 2))
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                  color: Colors.white, strokeWidth: 2))
                           : const Text('تحقق',
-                          style:
-                          TextStyle(fontSize: 16, color: Colors.white)),
+                              style:
+                                  TextStyle(fontSize: 16, color: Colors.white)),
                     ),
                   ],
                 ),

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'ClientHomeScreen.dart';
-// import 'NewOrder.dart';
 import 'PresentOrder.dart';
-// import 'PastOrder.dart';
 import 'FavoritesPage.dart';
 import 'AccountPage.dart';
 
 class Details extends StatefulWidget {
-  const Details({super.key});
+  final Map<String, dynamic> shipment;
+
+  const Details({super.key, required this.shipment});
 
   @override
   State<Details> createState() => _DetailsState();
@@ -17,18 +17,23 @@ class _DetailsState extends State<Details> {
   final Color greenColor = const Color(0xFF048372);
   final Color grayColor = const Color(0xFFF6F6F6);
   final Color yellowColor = const Color(0xFFFFD600);
-  int currentIndex = 1; // قسم "طلباتي"
+  int currentIndex = 1;
+  late Map<String, dynamic> shipment;
+
+  @override
+  void initState() {
+    super.initState();
+    shipment = widget.shipment;
+  }
 
   void onBottomNavItemTapped(int index) {
     setState(() {
       currentIndex = index;
     });
 
-    // هنا تضيف التنقل بين الصفحات حسب رقم التاب:
     if (index == 0) {
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const ClientHomePage()));
     } else if (index == 1) {
-      // هذه الصفحة حالياً "طلباتي"، ممكن توجه لصفحة NewOrder أو PresentOrder أو PastOrder
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const PresentOrder()));
     } else if (index == 2) {
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const FavoritesPage()));
@@ -43,7 +48,6 @@ class _DetailsState extends State<Details> {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         backgroundColor: grayColor,
-        /////////////////////////////////////////////////////////
         appBar: AppBar(
           backgroundColor: Colors.white,
           centerTitle: true,
@@ -63,7 +67,6 @@ class _DetailsState extends State<Details> {
             icon: Icon(Icons.arrow_back_ios, color: greenColor),
           ),
         ),
-        // nav bar////////////////////////////////////////////////////////////////////////////
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: currentIndex,
           onTap: onBottomNavItemTapped,
@@ -77,8 +80,6 @@ class _DetailsState extends State<Details> {
             BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'حسابي'),
           ],
         ),
-        ///////////////////////////////////////////////////////////////////////////////////////
-
         body: SafeArea(
           child: Column(
             children: [
@@ -91,32 +92,32 @@ class _DetailsState extends State<Details> {
                     children: [
                       _buildTextField(
                         label: 'عنوان الاستلام',
-                        value: 'برج مرمر الفيصلية',
+                        value: shipment['pickup_address'] ?? '',
                       ),
                       _buildTextField(
                         label: 'عنوان التوصيل',
-                        value: 'برج مرمر الفيصلية',
+                        value: shipment['delivery_address'] ?? '',
                       ),
                       Row(
                         children: [
                           Expanded(
                             child: _buildTextField(
                               label: 'التوقيت',
-                              value: '2:30 م',
+                              value: shipment['time'] ?? '',
                             ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: _buildTextField(
                               label: 'التاريخ',
-                              value: '25 يوليو 2025',
+                              value: shipment['date'] ?? '',
                             ),
                           ),
                         ],
                       ),
                       _buildTextField(
                         label: 'نوع الطلب',
-                        value: 'أثاث',
+                        value: shipment['type'] ?? '',
                       ),
                       _buildTextField(
                         label: 'طريقة الدفع',
@@ -125,7 +126,8 @@ class _DetailsState extends State<Details> {
                           children: [
                             Icon(Icons.apple, color: greenColor),
                             const SizedBox(width: 8),
-                            Text('Apple Pay', style: TextStyle(fontFamily: 'Almarai')),
+                            Text(shipment['payment_method'] ?? 'Apple Pay',
+                                style: TextStyle(fontFamily: 'Almarai')),
                           ],
                         ),
                       ),
@@ -134,14 +136,18 @@ class _DetailsState extends State<Details> {
                         label: 'ملخص الطلب',
                         valueWidget: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
-                            Text('اسم المنتج: طاولة طعام', style: TextStyle(fontFamily: 'Almarai')),
-                            SizedBox(height: 8),
-                            Text('الكمية: 1', style: TextStyle(fontFamily: 'Almarai')),
-                            SizedBox(height: 8),
-                            Text('سعر الوحدة: 500 ر.س', style: TextStyle(fontFamily: 'Almarai')),
-                            SizedBox(height: 8),
-                            Text('الإجمالي: 500 ر.س', style: TextStyle(fontFamily: 'Almarai')),
+                          children: [
+                            Text('اسم المنتج: ${shipment['product_name'] ?? 'طاولة طعام'}',
+                                style: const TextStyle(fontFamily: 'Almarai')),
+                            const SizedBox(height: 8),
+                            Text('الكمية: ${shipment['quantity'] ?? '1'}',
+                                style: const TextStyle(fontFamily: 'Almarai')),
+                            const SizedBox(height: 8),
+                            Text('سعر الوحدة: ${shipment['unit_price'] ?? '500'} ر.س',
+                                style: const TextStyle(fontFamily: 'Almarai')),
+                            const SizedBox(height: 8),
+                            Text('الإجمالي: ${shipment['total'] ?? '500'} ر.س',
+                                style: const TextStyle(fontFamily: 'Almarai')),
                           ],
                         ),
                       ),
