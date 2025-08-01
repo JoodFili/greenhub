@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
+import '../utiles/constant_variable.dart' as globals;
 
 class DriverConfirmationPage extends StatelessWidget {
   final Map<String, dynamic> driver;
@@ -16,7 +18,7 @@ class DriverConfirmationPage extends StatelessWidget {
     final Color redColor = Colors.red;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F6F6), // ← هنا تتحكم باللون
+      backgroundColor: const Color(0xFFF6F6F6),
       appBar: AppBar(
         backgroundColor: Colors.white,
         centerTitle: true,
@@ -57,9 +59,26 @@ class DriverConfirmationPage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   ElevatedButton(
-                    onPressed: () {
-                      // نفذ عملية القبول هنا
-                      Navigator.pop(context);
+                    onPressed: () async {
+                      final offerId = driver['offer_id'];
+                      //print('الـ offer_id المرسل: $offerId');
+
+                      try {
+                        final response = await Dio().post(
+                          'http://10.0.2.2:8000/api/accept-offer',
+                          data: {'offer_id': offerId},
+                          options: Options(
+                            headers: {
+                              'Authorization': 'Bearer ${globals.authToken}',
+                              'Accept': 'application/json',
+                            },
+                          ),
+                        );
+                        //print('الرد من السيرفر: ${response.data}');
+                        Navigator.pop(context);
+                      } on DioException catch (e) {
+                        //print('خطأ أثناء القبول: ${e.response?.data}');
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: greenColor,
@@ -68,7 +87,7 @@ class DriverConfirmationPage extends StatelessWidget {
                   ),
                   ElevatedButton(
                     onPressed: () {
-                      // نفذ عملية الرفض هنا
+                      // تنفيذ الرفض هنا
                       Navigator.pop(context);
                     },
                     style: ElevatedButton.styleFrom(

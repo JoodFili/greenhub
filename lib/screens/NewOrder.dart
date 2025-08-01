@@ -9,6 +9,7 @@ import 'ClientHomeScreen.dart';
 import 'AccountPage.dart';
 import 'FavoritesPage.dart';
 import 'driver_confirmation.dart';
+
 class NewOrder extends StatefulWidget {
   const NewOrder({super.key});
 
@@ -57,7 +58,6 @@ class _NewOrderState extends State<NewOrder> {
       });
     }
   }
-
 
   void navigateToTab(String label) {
     if (label == 'الحالية') {
@@ -136,13 +136,16 @@ class _NewOrderState extends State<NewOrder> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => DriverConfirmationPage(
-                      driver: driver,
+                      driver: {
+                        'id': driver['id'],
+                        'phone': driver['phone'],
+                        'offer_id': offer['id'], // <-- أضفت هذا السطر هنا
+                      },
                       price: offer['price'].toString(),
                     ),
                   ),
                 );
               },
-
               child: const Text(
                 'اختيار السائق',
                 style: TextStyle(
@@ -295,5 +298,3 @@ class _NewOrderState extends State<NewOrder> {
     );
   }
 }
-
-
