@@ -19,11 +19,13 @@ class _DetailsState extends State<Details> {
   final Color yellowColor = const Color(0xFFFFD600);
   int currentIndex = 1;
   late Map<String, dynamic> shipment;
+  late Map<String, dynamic> details;
 
   @override
   void initState() {
     super.initState();
     shipment = widget.shipment;
+    details = shipment['details'] ?? {};
   }
 
   void onBottomNavItemTapped(int index) {
@@ -32,13 +34,17 @@ class _DetailsState extends State<Details> {
     });
 
     if (index == 0) {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const ClientHomePage()));
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => const ClientHomePage()));
     } else if (index == 1) {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const PresentOrder()));
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => const PresentOrder()));
     } else if (index == 2) {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const FavoritesPage()));
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => const FavoritesPage()));
     } else if (index == 3) {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const AccountPage()));
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => const AccountPage()));
     }
   }
 
@@ -81,81 +87,61 @@ class _DetailsState extends State<Details> {
           ],
         ),
         body: SafeArea(
-          child: Column(
-            children: [
-              const SizedBox(height: 25),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildTextField(
+                  label: 'عنوان الاستلام',
+                  value: details['address'] ?? '',
+                ),
+                _buildTextField(
+                  label: 'عنوان التوصيل',
+                  value: details['destination'] ?? '',
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildTextField(
+                        label: 'التوقيت',
+                        value: details['scheduled_time'] ?? '',
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildTextField(
+                        label: 'التاريخ',
+                        value: details['scheduled_date'] ?? '',
+                      ),
+                    ),
+                  ],
+                ),
+                _buildTextField(
+                  label: 'نوع الطلب',
+                  value: details['type'] ?? '',
+                ),
+                _buildTextField(
+                  label: 'طريقة الدفع',
+                  valueWidget: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      _buildTextField(
-                        label: 'عنوان الاستلام',
-                        value: shipment['pickup_address'] ?? '',
-                      ),
-                      _buildTextField(
-                        label: 'عنوان التوصيل',
-                        value: shipment['delivery_address'] ?? '',
-                      ),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildTextField(
-                              label: 'التوقيت',
-                              value: shipment['time'] ?? '',
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildTextField(
-                              label: 'التاريخ',
-                              value: shipment['date'] ?? '',
-                            ),
-                          ),
-                        ],
-                      ),
-                      _buildTextField(
-                        label: 'نوع الطلب',
-                        value: shipment['type'] ?? '',
-                      ),
-                      _buildTextField(
-                        label: 'طريقة الدفع',
-                        valueWidget: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Icon(Icons.apple, color: greenColor),
-                            const SizedBox(width: 8),
-                            Text(shipment['payment_method'] ?? 'Apple Pay',
-                                style: TextStyle(fontFamily: 'Almarai')),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      _buildTextField(
-                        label: 'ملخص الطلب',
-                        valueWidget: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('اسم المنتج: ${shipment['product_name'] ?? 'طاولة طعام'}',
-                                style: const TextStyle(fontFamily: 'Almarai')),
-                            const SizedBox(height: 8),
-                            Text('الكمية: ${shipment['quantity'] ?? '1'}',
-                                style: const TextStyle(fontFamily: 'Almarai')),
-                            const SizedBox(height: 8),
-                            Text('سعر الوحدة: ${shipment['unit_price'] ?? '500'} ر.س',
-                                style: const TextStyle(fontFamily: 'Almarai')),
-                            const SizedBox(height: 8),
-                            Text('الإجمالي: ${shipment['total'] ?? '500'} ر.س',
-                                style: const TextStyle(fontFamily: 'Almarai')),
-                          ],
-                        ),
+                      Icon(Icons.payment, color: greenColor),
+                      const SizedBox(width: 8),
+                      Text(
+                        details['payment_method'] ?? 'غير محدد',
+                        style: TextStyle(fontFamily: 'Almarai'),
                       ),
                     ],
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 20),
+                _buildTextField(
+                  label: 'ملخص الطلب',
+                  value: details['summary'] ?? '',
+                ),
+              ],
+            ),
           ),
         ),
       ),
