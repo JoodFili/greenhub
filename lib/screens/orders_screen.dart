@@ -43,9 +43,9 @@ class _OrdersScreenState extends State<OrdersScreen>
                 fontWeight: FontWeight.bold)),
         bottom: TabBar(
           controller: _tabController,
-          labelColor: Color(0xFF048372),
-          unselectedLabelColor: Color(0xFFAECF5C),
-          indicatorColor: Color(0xFF048372),
+          labelColor: const Color(0xFF048372),
+          unselectedLabelColor: const Color(0xFFAECF5C),
+          indicatorColor: const Color(0xFF048372),
           tabs: const [
             Tab(text: 'الجديدة'),
             Tab(text: 'الحالية'),
@@ -55,7 +55,7 @@ class _OrdersScreenState extends State<OrdersScreen>
       ),
       body: TabBarView(
         controller: _tabController,
-        children: const [
+        children: [
           NewOrdersPage(),
           CurrentOrdersPage(),
           PastOrdersPage(),
